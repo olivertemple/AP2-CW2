@@ -6,6 +6,10 @@ const app = express();
 const port = 3000;
 
 const earthquakeRoutes = require("./routes/earthquake");
+const observatoryRoutes = require("./routes/observatory");
+const samplesRoutes = require("./routes/samples");
+const usersRoutes = require("./routes/users");
+
 
 app.use(express.json()) //This parses incoming requests as JSON payloads
 
@@ -13,6 +17,9 @@ app.use(express.json()) //This parses incoming requests as JSON payloads
 app.use(express.static(path.resolve(__dirname, "./frontend_build/www"))) //This is to serve the ionic page
 
 app.use("/api/earthquake", earthquakeRoutes);
+app.use("/api/observatory", observatoryRoutes);
+app.use("/api/samples", samplesRoutes);
+app.use("/api/users", usersRoutes);
 
 app.listen(port, (err) => {
     err ? console.log(err) : console.log(`Listening on port ${port}`)

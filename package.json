@@ -12,7 +12,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ./server.js",
-    "setup-database": "node ./database_setup.js"
+    "setup-database": "node ./database/database_setup.js"
   },
   "repository": {
     "type": "git",

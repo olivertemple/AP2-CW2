@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 router.get("/", (req, res) => {
-    res.json({endpoint: "earthquake"})
+    res.json({endpoint: "samples"})
 })
 
 module.exports = router;
