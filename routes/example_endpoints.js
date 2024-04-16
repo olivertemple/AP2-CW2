@@ -20,8 +20,6 @@ router.get("/", (req, res) => {
 })
 
 router.get("/get_by_id", (req, res) => {
-    console.log(req.query);
-
     if (req.query.id) {
         let id = req.query.id;
         sql.connect(config, async err => {
@@ -30,14 +28,13 @@ router.get("/get_by_id", (req, res) => {
             }else{
                 console.log("connection successful")
                 let sql_res = await sql.query(`SELECT * FROM examples WHERE Earthquake_id = ${id}`);
-                console.log(sql_res);
+                // console.log(sql_res);
                 res.json(sql_res.recordset)
             }
         })
     }else{
-        res.status(404)
+        res.status(400).send();
     }
-
 })
 
 module.exports = router;
