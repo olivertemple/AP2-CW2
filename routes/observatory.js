@@ -37,7 +37,13 @@ router.post("/create", (req, res) => {
         if (err){
             console.log(err)
         }else{
-            sql.query(`INSERT INTO ObservatoryData VALUES ('${req.body.name}', '${req.body.country}', ${req.body.latitude}, ${req.body.longitude}, '${req.body.date_established}')`).then(sql_res => {
+            sql.query(`INSERT INTO ObservatoryData VALUES (
+                '${req.body.name}',
+                '${req.body.country}',
+                ${req.body.latitude},
+                ${req.body.longitude},
+                '${req.body.date_established}'
+            )`).then(sql_res => {
                 console.log(sql_res);
                 res.status(200).send();
             }).catch(err => {
