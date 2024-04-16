@@ -9,6 +9,7 @@ const earthquakeRoutes = require("./routes/earthquake");
 const observatoryRoutes = require("./routes/observatory");
 const samplesRoutes = require("./routes/samples");
 const usersRoutes = require("./routes/users");
+const exampleRoutes = require("./routes/example_endpoints");
 
 
 app.use(express.json()) //This parses incoming requests as JSON payloads
@@ -20,6 +21,7 @@ app.use("/api/earthquake", earthquakeRoutes);
 app.use("/api/observatory", observatoryRoutes);
 app.use("/api/samples", samplesRoutes);
 app.use("/api/users", usersRoutes);
+app.use("/api/examples", exampleRoutes);
 
 app.listen(port, (err) => {
     err ? console.log(err) : console.log(`Listening on port ${port}`)
