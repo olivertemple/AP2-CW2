@@ -122,7 +122,7 @@ router.get("/search", (req, res) => {
             console.log(err)
         } else {
             sql.query(query).then(sql_res => {
-                if (sql_res.recordset.length == 0){
+                if (sql_res.recordset.length == 0) {
                     res.status(400).send("no earthquakes found");
                     return false;
                 }
@@ -161,14 +161,14 @@ router.get("/search_radius", (req, res) => {
                     lat < ${search_params.latitude + search_params.radius} AND
                     lat > ${search_params.latitude - search_params.radius}
                 )`).then(sql_res => {
-                if (sql_res.recordset.length == 0){
+                if (sql_res.recordset.length == 0) {
                     res.status(400).send("no earthquakes found");
                     return false;
                 }
                 let resp = [];
-                for (let i in sql_res.recordset){
+                for (let i in sql_res.recordset) {
                     let item = sql_res.recordset[i];
-                    if (Math.pow(item.Lat - search_params.latitude,2) + Math.pow(item.Long - search_params.longitude,2) <= Math.pow(search_params.radius,2)){
+                    if (Math.pow(item.Lat - search_params.latitude, 2) + Math.pow(item.Long - search_params.longitude, 2) <= Math.pow(search_params.radius, 2)) {
                         resp.push(item);
                     }
                 }

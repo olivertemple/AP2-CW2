@@ -109,4 +109,47 @@ router.get("/average_magnitude", (req, res) => {
     })
 })
 
+router.get("/average_number", (req, res) => {
+    if (!req.query.id) {
+        res.status(400).send("no id sent");
+        return false;
+    }
+    let observatory_id = req.query.id;
+
+    sql.connect(config, async err => {
+        if (err) {
+            console.log(err)
+            res.status(500).send();
+            return false;
+        } else {
+            try {
+                let sql_res_count = await sql.query(`SELECT COUNT(id) FROM EarthquakeData WHERE ObservatoryId = ${observatory_id} GROUP BY YEAR(EventDate)`)
+                if (sql_res_count.recordset.length == 0) {
+                    res.status(400).send(`No earthquakes found with observatory id of ${observatory_id}`);
+                    return false;
+                }
+
+                let total = 0;
+                for (let i in sql_res_count.recordset) {
+                    total += sql_res_count.recordset[i]['']
+                }
+
+                let sql_res_date = await sql.query(`SELECT EstablishedDate FROM ObservatoryData WHERE ObservatoryId = ${observatory_id}`)
+                if (sql_res_date.recordset.length == 0) {
+                    res.status(400).send(`observatory with id of ${observatory_id} not found`);
+                    return false;
+                }
+                let num_years = new Date().getFullYear() - new Date(sql_res_date.recordset[0].EstablishedDate).getFullYear();
+                let average = total / num_years;
+
+                res.json({"average_number": average});
+            } catch (err) {
+                console.log(err);
+                    res.status(500).send();
+                    return false;
+            }
+        }
+    })
+})
+
 module.exports = router;
