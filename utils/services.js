@@ -1,6 +1,6 @@
 function check_body_schema(body, schema) {
     for (let attribute in schema) {
-        if (typeof body[attribute] !== schema[attribute]) {
+        if (schema[attribute][1] && typeof body[attribute] !== schema[attribute][0]) {
             return false;
         }
     }
