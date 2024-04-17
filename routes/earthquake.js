@@ -69,6 +69,8 @@ const searchSchema = {
     earthquake_type: ["string", false],
     start_date: ["string", false],
     end_date: ["string", false],
+    magnitude_max: ["number", false],
+    magnitude_min: ["number", false]
 }
 router.get("/search", (req, res) => {
     let search_params = req.body;
@@ -81,34 +83,34 @@ router.get("/search", (req, res) => {
     let sql_query = [];
     let keys = Object.keys(search_params);
 
-    if (keys.includes("start_date") && keys.includes("end_date")){
-        if (new Date(search_params['start_date']) > new Date(search_params['end_date'])){
+    if (keys.includes("start_date") && keys.includes("end_date")) {
+        if (new Date(search_params['start_date']) > new Date(search_params['end_date'])) {
             res.status(400).send("start date is after end date");
             return false;
         }
 
         let start_date = search_params['start_date'].split("-").join("-");
         let end_date = search_params['end_date'].split("-").join("-");
-        sql_query.push(`(EventDate BETWEEN '${start_date}' AND '${end_date}')`)
+        sql_query.push(`(EventDate BETWEEN '${start_date}' AND '${end_date}')`);
     }
 
-    if (keys.includes("magnitude_max") && keys.includes("magnitude_min")){
-        sql_query.push(`(magnitude BETWEEN ${search_params['magnitude_min']} AND ${search_params['magnitude_max']})`)
+    if (keys.includes("magnitude_max") && keys.includes("magnitude_min")) {
+        sql_query.push(`(magnitude BETWEEN ${search_params['magnitude_min']} AND ${search_params['magnitude_max']})`);
     }
 
-    if (keys.includes("id")){
+    if (keys.includes("id")) {
         sql_query.push(`(id = ${search_params['id']})`);
     }
 
-    if (keys.includes("country")){
+    if (keys.includes("country")) {
         sql_query.push(`(country = '${search_params['country']}')`);
     }
 
-    if (keys.includes("earthquake_type")){
-        sql_query.push(`(EarthquakeType = '${search_params['earthquake_type']}')`)
+    if (keys.includes("earthquake_type")) {
+        sql_query.push(`(EarthquakeType = '${search_params['earthquake_type']}')`);
     }
 
-    if (sql_query.length == 0){
+    if (sql_query.length == 0) {
         res.status(400).send("no search parameters");
         return false;
     }
@@ -119,7 +121,12 @@ router.get("/search", (req, res) => {
         if (err) {
             console.log(err)
         } else {
+            console.log(query)
             sql.query(query).then(sql_res => {
+                if (sql_res.recordset.length == 0){
+                    res.status(400).send("no earthquakes found");
+                    return false;
+                }
                 res.json(sql_res.recordset);
                 return true;
             }).catch(err => {

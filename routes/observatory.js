@@ -20,18 +20,17 @@ router.get("/", (req, res) => {
 })
 
 const createBodySchema = {
-    name: "string",
-    country: 'string',
-    latitude: 'number',
-    longitude: 'number',
-    date_established: 'string'
+    name: ["string", true],
+    country: ['string', true],
+    latitude: ['number', true],
+    longitude: ['number', true],
+    date_established: ['string', true]
 }
 
 router.post("/create", (req, res) => {
     if (!check_body_schema(req.body, createBodySchema)) {
         res.status(400).send("Invalid request body");
     }
-    console.log(req.body);
 
     sql.connect(config, async err => {
         if (err){
@@ -43,8 +42,7 @@ router.post("/create", (req, res) => {
                 ${req.body.latitude},
                 ${req.body.longitude},
                 '${req.body.date_established}'
-            )`).then(sql_res => {
-                console.log(sql_res);
+            )`).then(_ => {
                 res.status(200).send();
             }).catch(err => {
                 console.log(err);
@@ -52,6 +50,35 @@ router.post("/create", (req, res) => {
             })
         }
     })
+})
+
+router.get("/largest_magnitude", (req, res) => {
+    if (!req.query.id){
+        res.status(400).send("no id sent");
+        return false;
+    }
+    let observatory_id = req.query.id;
+    sql.connect(config, async err => {
+        if (err){
+            console.log(err)
+            res.status(500).send();
+            return false;
+        }else{
+            sql.query(`SELECT * from EarthquakeData e WHERE e.magnitude = (SELECT MAX(magnitude) FROM EarthquakeData WHERE ObservatoryId = ${observatory_id}) `).then(sql_res => {
+                if (sql_res.recordset.length == 0){
+                    res.status(400).send(`No earthquakes found with observatory id of ${observatory_id}`);
+                    return false;
+                }
+                res.json(sql_res.recordset);
+                return true;
+            }).catch(err => {
+                console.log(err);
+                res.status(500).send();
+                return false;
+            })
+        }
+    })
+
 })
 
 module.exports = router;
