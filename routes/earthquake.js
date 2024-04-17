@@ -68,7 +68,7 @@ const searchSchema = {
     country: ["string", false],
     earthquake_type: ["string", false],
     start_date: ["string", false],
-    end_date: ["string", false]
+    end_date: ["string", false],
 }
 router.get("/search", (req, res) => {
     let search_params = req.body;
@@ -92,6 +92,10 @@ router.get("/search", (req, res) => {
         sql_query.push(`(EventDate BETWEEN '${start_date}' AND '${end_date}')`)
     }
 
+    if (keys.includes("magnitude_max") && keys.includes("magnitude_min")){
+        sql_query.push(`(magnitude BETWEEN ${search_params['magnitude_min']} AND ${search_params['magnitude_max']})`)
+    }
+
     if (keys.includes("id")){
         sql_query.push(`(id = ${search_params['id']})`);
     }
@@ -108,6 +112,7 @@ router.get("/search", (req, res) => {
         res.status(400).send("no search parameters");
         return false;
     }
+
     let query = "SELECT * FROM EarthquakeData WHERE " + sql_query.join(` ${search_params['operator']} `);
 
     sql.connect(config, async err => {
