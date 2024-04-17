@@ -78,7 +78,35 @@ router.get("/largest_magnitude", (req, res) => {
             })
         }
     })
+})
 
+router.get("/average_magnitude", (req, res) => {
+    if (!req.query.id) {
+        req.status(400).send("no id sent");
+        return false;
+    }
+
+    let observatory_id = req.query.id;
+    sql.connect(config, async err => {
+        if (err){
+            console.log(err)
+            res.status(500).send();
+            return false;
+        }else{
+            sql.query(`SELECT AVG(magnitude) FROM EarthquakeData WHERE ObservatoryId = ${observatory_id}`).then(sql_res => {
+                if (sql_res.recordset[0][''] == null){
+                    res.status(400).send(`No earthquakes found with observatory id of ${observatory_id}`);
+                    return false;
+                }
+                res.json({"average_magnitude": sql_res.recordset[0]['']});
+                return true;
+            }).catch(err => {
+                console.log(err);
+                res.status(500).send();
+                return false;
+            })
+        }
+    })
 })
 
 module.exports = router;
