@@ -121,13 +121,58 @@ router.get("/search", (req, res) => {
         if (err) {
             console.log(err)
         } else {
-            console.log(query)
             sql.query(query).then(sql_res => {
                 if (sql_res.recordset.length == 0){
                     res.status(400).send("no earthquakes found");
                     return false;
                 }
                 res.json(sql_res.recordset);
+                return true;
+            }).catch(err => {
+                console.log(err);
+                res.status(500).send();
+                return false;
+            })
+        }
+    })
+})
+
+const searchRadiusSchema = {
+    latitude: ["number", true],
+    longitude: ["number", true],
+    radius: ["number", true]
+}
+
+router.get("/search_radius", (req, res) => {
+    let search_params = req.body;
+
+    if (!check_body_schema(search_params, searchRadiusSchema)) {
+        res.status(400).send("Invalid request body - please include an operator (AND or OR) for the search");
+        return false;
+    }
+
+    sql.connect(config, async err => {
+        if (err) {
+            console.log(err)
+        } else {
+            sql.query(`SELECT * FROM EarthquakeData WHERE (
+                    long < ${search_params.longitude + search_params.radius} AND
+                    long > ${search_params.longitude - search_params.radius} AND
+                    lat < ${search_params.latitude + search_params.radius} AND
+                    lat > ${search_params.latitude - search_params.radius}
+                )`).then(sql_res => {
+                if (sql_res.recordset.length == 0){
+                    res.status(400).send("no earthquakes found");
+                    return false;
+                }
+                let resp = [];
+                for (let i in sql_res.recordset){
+                    let item = sql_res.recordset[i];
+                    if (Math.pow(item.Lat - search_params.latitude,2) + Math.pow(item.Long - search_params.longitude,2) <= Math.pow(search_params.radius,2)){
+                        resp.push(item);
+                    }
+                }
+                res.json(resp);
                 return true;
             }).catch(err => {
                 console.log(err);
