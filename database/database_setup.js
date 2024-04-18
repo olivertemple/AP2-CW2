@@ -18,8 +18,8 @@ let earthquakeTable = "CREATE TABLE EarthquakeData ( \
     EventDate DATETIME NOT NULL, \
     Magnitude FLOAT NOT NULL, \
     Country VARCHAR(100) NOT NULL, \
-    Long VARCHAR(100) NOT NULL, \
-    Lat VARCHAR(100) NOT NULL, \
+    Long FLOAT NOT NULL, \
+    Lat FLOAT NOT NULL, \
     ObservatoryId INT FOREIGN KEY REFERENCES ObservatoryData(ObservatoryId) NOT NULL, \
     EarthquakeType VARCHAR(50) NOT NULL, \
     SeismicWaveType VARCHAR(50) NOT NULL \

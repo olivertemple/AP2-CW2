@@ -69,6 +69,8 @@ const searchSchema = {
     earthquake_type: ["string", false],
     start_date: ["string", false],
     end_date: ["string", false],
+    magnitude_max: ["number", false],
+    magnitude_min: ["number", false]
 }
 router.get("/search", (req, res) => {
     let search_params = req.body;
@@ -81,34 +83,34 @@ router.get("/search", (req, res) => {
     let sql_query = [];
     let keys = Object.keys(search_params);
 
-    if (keys.includes("start_date") && keys.includes("end_date")){
-        if (new Date(search_params['start_date']) > new Date(search_params['end_date'])){
+    if (keys.includes("start_date") && keys.includes("end_date")) {
+        if (new Date(search_params['start_date']) > new Date(search_params['end_date'])) {
             res.status(400).send("start date is after end date");
             return false;
         }
 
         let start_date = search_params['start_date'].split("-").join("-");
         let end_date = search_params['end_date'].split("-").join("-");
-        sql_query.push(`(EventDate BETWEEN '${start_date}' AND '${end_date}')`)
+        sql_query.push(`(EventDate BETWEEN '${start_date}' AND '${end_date}')`);
     }
 
-    if (keys.includes("magnitude_max") && keys.includes("magnitude_min")){
-        sql_query.push(`(magnitude BETWEEN ${search_params['magnitude_min']} AND ${search_params['magnitude_max']})`)
+    if (keys.includes("magnitude_max") && keys.includes("magnitude_min")) {
+        sql_query.push(`(magnitude BETWEEN ${search_params['magnitude_min']} AND ${search_params['magnitude_max']})`);
     }
 
-    if (keys.includes("id")){
+    if (keys.includes("id")) {
         sql_query.push(`(id = ${search_params['id']})`);
     }
 
-    if (keys.includes("country")){
+    if (keys.includes("country")) {
         sql_query.push(`(country = '${search_params['country']}')`);
     }
 
-    if (keys.includes("earthquake_type")){
-        sql_query.push(`(EarthquakeType = '${search_params['earthquake_type']}')`)
+    if (keys.includes("earthquake_type")) {
+        sql_query.push(`(EarthquakeType = '${search_params['earthquake_type']}')`);
     }
 
-    if (sql_query.length == 0){
+    if (sql_query.length == 0) {
         res.status(400).send("no search parameters");
         return false;
     }
@@ -120,7 +122,57 @@ router.get("/search", (req, res) => {
             console.log(err)
         } else {
             sql.query(query).then(sql_res => {
+                if (sql_res.recordset.length == 0) {
+                    res.status(400).send("no earthquakes found");
+                    return false;
+                }
                 res.json(sql_res.recordset);
+                return true;
+            }).catch(err => {
+                console.log(err);
+                res.status(500).send();
+                return false;
+            })
+        }
+    })
+})
+
+const searchRadiusSchema = {
+    latitude: ["number", true],
+    longitude: ["number", true],
+    radius: ["number", true]
+}
+
+router.get("/search_radius", (req, res) => {
+    let search_params = req.body;
+
+    if (!check_body_schema(search_params, searchRadiusSchema)) {
+        res.status(400).send("Invalid request body - please include an operator (AND or OR) for the search");
+        return false;
+    }
+
+    sql.connect(config, async err => {
+        if (err) {
+            console.log(err)
+        } else {
+            sql.query(`SELECT * FROM EarthquakeData WHERE (
+                    long < ${search_params.longitude + search_params.radius} AND
+                    long > ${search_params.longitude - search_params.radius} AND
+                    lat < ${search_params.latitude + search_params.radius} AND
+                    lat > ${search_params.latitude - search_params.radius}
+                )`).then(sql_res => {
+                if (sql_res.recordset.length == 0) {
+                    res.status(400).send("no earthquakes found");
+                    return false;
+                }
+                let resp = [];
+                for (let i in sql_res.recordset) {
+                    let item = sql_res.recordset[i];
+                    if (Math.pow(item.Lat - search_params.latitude, 2) + Math.pow(item.Long - search_params.longitude, 2) <= Math.pow(search_params.radius, 2)) {
+                        resp.push(item);
+                    }
+                }
+                res.json(resp);
                 return true;
             }).catch(err => {
                 console.log(err);
