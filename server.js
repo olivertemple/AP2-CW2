@@ -14,6 +14,11 @@ const exampleRoutes = require("./routes/example_endpoints");
 
 app.use(express.json()) //This parses incoming requests as JSON payloads
 
+app.use((req,res,next) => {
+    res.setHeader("Access-Control-Allow-Origin", "*")
+    next();
+})
+
 //If there is no build in the ./frontend_build/ folder then this won't work. You can download the latest stable build from github
 app.use(express.static(path.resolve(__dirname, "./frontend_build/www"))) //This is to serve the ionic page
 
