@@ -29,23 +29,27 @@ const searchSchema = {
 router.get("/search", (req, res) => {
     let search_params = req.body;
 
+    if (!check_body_schema(search_params, searchSchema)) {
+        res.status(400).send("Invalid request body");
+        return false;
+    }
+
     let keys = Object.keys(search_params);
     if (keys.length == 0) {
         res.status(400).send("Missing search parameter");
         return false;
-    }
-    else if (keys.length =! 1) {
+    } else if (keys.length > 1) {
         res.status(400).send("Only enter one search parameter")
+        return false;
     }
 
-    let sql_query = "";
+    let query;
+    if (keys[0] == 'id'){
+        query = `SELECT * FROM users WHERE user_id = ${search_params[keys[0]]}`;
+    } else {
+        query = `SELECT * FROM users WHERE ${keys[0]} = '${search_params[keys[0]]}'`;
+    }
     
-    for (let key in keys) {
-        sql_query = `${key}='${search_params[key]}'`;
-        break;
-    }
-    let query = `SELECT * FROM users WHERE ${sql_query}`;
-
     sql.connect(config, async err => {
         if (err) {
             console.log(err)
