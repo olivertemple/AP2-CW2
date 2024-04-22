@@ -58,10 +58,17 @@ let sampleTable = "CREATE TABLE SampleData ( \
     IsSampleRequired BIT NOT NULL, \
     ItemValue NUMERIC(10, 2) NOT NULL, \
     IsSold BIT NOT NULL, \
-    BuyerId INT FOREIGN KEY REFERENCES users(user_id) NOT NULL, \
     Observations TEXT NOT NULL \
 );"
 
+let transactionTable = "CREATE TABLE Transactions ( \
+    TransactionId INT IDENTITY PRIMARY KEY NOT NULL, \
+    BuyerId INT FOREIGN KEY REFERENCES users(user_id) NOT NULL, \
+    Value FLOAT NOT NULL, \
+    date_of_purchase DATETIME NOT NULL, \
+    collection_status VARCHAR(10) NOT NULL, \
+    SampleId INT FOREIGN KEY REFERENCES sampleData(SampleId) NOT NULL \
+);"
 
 
 sql.connect(config, async err => {
@@ -100,5 +107,13 @@ sql.connect(config, async err => {
                 console.error(err);
             }
         });
+
+        await sql.query(transactionTable).catch(err => {
+            if (err.originalError.info.number = 2714) {
+                console.error("Transaction table already exists");
+            }else{
+                console.error(err);
+            }
+        })
     }
 })
