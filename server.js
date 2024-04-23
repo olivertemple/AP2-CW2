@@ -31,7 +31,12 @@ loggers.add('api_logger', {
             filename:  `logs/${new Date().toISOString().split("T")[0]}.log`,
             format: file_formatter,
             level: 'info'
-        })
+        }),
+        new transports.File({
+            filename:  `logs/errors-${new Date().toISOString().split("T")[0]}.log`,
+            format: file_formatter,
+            level: 'error'
+        }),
     ]
 })
 

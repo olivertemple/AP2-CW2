@@ -79,7 +79,7 @@ router.get("/largest_magnitude", (req, res) => {
 
 router.get("/average_magnitude", (req, res) => {
     if (!req.query.id) {
-        req.status(400).send("no id sent");
+        res.status(400).send("no id sent");
         return false;
     }
 
