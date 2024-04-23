@@ -52,7 +52,7 @@ router.get("/search", (req, res) => {
     
     sql.connect(config, async err => {
         if (err) {
-            console.log(err)
+            res.status(500).send(err);
         } else {
             sql.query(query).then(sql_res => {
                 if (sql_res.recordset.length == 0) {
@@ -62,8 +62,7 @@ router.get("/search", (req, res) => {
                 res.json(sql_res.recordset);
                 return true;
             }).catch(err => {
-                console.log(err);
-                res.status(500).send();
+                res.status(500).send(err);
                 return false;
             })
         }

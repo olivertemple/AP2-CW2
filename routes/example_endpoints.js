@@ -24,11 +24,10 @@ router.get("/get_by_id", (req, res) => {
         let id = req.query.id;
         sql.connect(config, async err => {
             if (err){
-                console.log(err)
+                res.status(500).send(err);
             }else{
                 console.log("connection successful")
                 let sql_res = await sql.query(`SELECT * FROM examples WHERE Earthquake_id = ${id}`);
-                // console.log(sql_res);
                 res.json(sql_res.recordset)
             }
         })
