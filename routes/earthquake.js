@@ -39,7 +39,8 @@ router.post("/create", (req, res) => {
 
     sql.connect(config, async err => {
         if (err) {
-            console.log(err)
+            res.status(500).send(err);
+            return false;
         } else {
             sql.query(`INSERT INTO EarthquakeData VALUES (
                 '${req.body.datetime}',
@@ -54,8 +55,7 @@ router.post("/create", (req, res) => {
                 res.status(200).send();
                 return true;
             }).catch(err => {
-                console.log(err);
-                res.status(500).send();
+                res.status(500).send(err);
                 return false;
             })
         }
@@ -119,7 +119,8 @@ router.get("/search", (req, res) => {
 
     sql.connect(config, async err => {
         if (err) {
-            console.log(err)
+            res.status(500).send(err);
+            return false;
         } else {
             sql.query(query).then(sql_res => {
                 if (sql_res.recordset.length == 0) {
@@ -129,8 +130,7 @@ router.get("/search", (req, res) => {
                 res.json(sql_res.recordset);
                 return true;
             }).catch(err => {
-                console.log(err);
-                res.status(500).send();
+                res.status(500).send(err);
                 return false;
             })
         }
@@ -153,7 +153,8 @@ router.get("/search_radius", (req, res) => {
 
     sql.connect(config, async err => {
         if (err) {
-            console.log(err)
+            res.status(500).send(err);
+            return false;
         } else {
             sql.query(`SELECT * FROM EarthquakeData WHERE (
                     longitude < ${search_params.longitude + search_params.radius} AND
@@ -175,8 +176,7 @@ router.get("/search_radius", (req, res) => {
                 res.json(resp);
                 return true;
             }).catch(err => {
-                console.log(err);
-                res.status(500).send();
+                res.status(500).send(err);
                 return false;
             })
         }

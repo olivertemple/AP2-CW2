@@ -34,7 +34,7 @@ router.post("/create", (req, res) => {
 
     sql.connect(config, async err => {
         if (err){
-            console.log(err)
+            res.status(500).send(err);
         }else{
             sql.query(`INSERT INTO ObservatoryData VALUES (
                 '${req.body.name}',
@@ -45,8 +45,7 @@ router.post("/create", (req, res) => {
             )`).then(_ => {
                 res.status(200).send();
             }).catch(err => {
-                console.log(err);
-                res.status(500).send();
+                res.status(500).send(err);
             })
         }
     })
@@ -60,8 +59,7 @@ router.get("/largest_magnitude", (req, res) => {
     let observatory_id = req.query.id;
     sql.connect(config, async err => {
         if (err){
-            console.log(err)
-            res.status(500).send();
+            res.status(500).send(err);
             return false;
         }else{
             sql.query(`SELECT * from EarthquakeData e WHERE e.magnitude = (SELECT MAX(magnitude) FROM EarthquakeData WHERE ObservatoryId = ${observatory_id}) `).then(sql_res => {
@@ -72,8 +70,7 @@ router.get("/largest_magnitude", (req, res) => {
                 res.json(sql_res.recordset);
                 return true;
             }).catch(err => {
-                console.log(err);
-                res.status(500).send();
+                res.status(500).send(err);
                 return false;
             })
         }
@@ -82,15 +79,14 @@ router.get("/largest_magnitude", (req, res) => {
 
 router.get("/average_magnitude", (req, res) => {
     if (!req.query.id) {
-        req.status(400).send("no id sent");
+        res.status(400).send("no id sent");
         return false;
     }
 
     let observatory_id = req.query.id;
     sql.connect(config, async err => {
         if (err){
-            console.log(err)
-            res.status(500).send();
+            res.status(500).send(err);
             return false;
         }else{
             sql.query(`SELECT AVG(magnitude) FROM EarthquakeData WHERE ObservatoryId = ${observatory_id}`).then(sql_res => {
@@ -101,8 +97,7 @@ router.get("/average_magnitude", (req, res) => {
                 res.json({"average_magnitude": sql_res.recordset[0]['']});
                 return true;
             }).catch(err => {
-                console.log(err);
-                res.status(500).send();
+                res.status(500).send(err);
                 return false;
             })
         }
@@ -118,8 +113,7 @@ router.get("/average_number", (req, res) => {
 
     sql.connect(config, async err => {
         if (err) {
-            console.log(err)
-            res.status(500).send();
+            res.status(500).send(err);
             return false;
         } else {
             try {
@@ -144,9 +138,8 @@ router.get("/average_number", (req, res) => {
 
                 res.json({"average_number": average});
             } catch (err) {
-                console.log(err);
-                    res.status(500).send();
-                    return false;
+                res.status(500).send(err);
+                return false;
             }
         }
     })
