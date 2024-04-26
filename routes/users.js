@@ -69,5 +69,45 @@ router.get("/search", (req, res) => {
         }
     })
 })
+//CHANGE TO APPROPRATE PARAMETERS
+const createBodySchema = {
+    username: ["string", true],
+    password: ['number', true],
+    first_name: ["string", true],
+    last_name: ['number', true],
+    address: ['number', true],
+    date_of_birth: ["number", true],
+    user_type: ["string", true]
+}
+
+router.post("/create", (req, res) => {
+    if (!check_body_schema(req.body, createBodySchema)) {
+        res.status(400).send("Invalid request body");
+        return false;
+    }
+
+    sql.connect(config, async err => {
+        if (err) {
+            console.log(err)
+        } else {
+            sql.query(`INSERT INTO users VALUES (
+                '${req.body.username}',
+                ${req.body.password},
+                '${req.body.first_name}',
+                ${req.body.last_name},
+                ${req.body.address},
+                ${req.body.date_of_birth},
+                '${req.body.user_type}'
+            )`).then(_ => {
+                res.status(200).send();
+                return true;
+            }).catch(err => {
+                console.log(err);
+                res.status(500).send();
+                return false;
+            })
+        }
+    })
+})
 
 module.exports = router;
