@@ -68,5 +68,55 @@ router.get("/search", (req, res) => {
         }
     })
 })
+const createBodySchema = {
+    username: ["string", true],
+    password: ['string', true],
+    first_name: ["string", true],
+    last_name: ['string', true],
+    address: ['string', true],
+    date_of_birth: ["string", true],
+    user_type: ["string", true]
+}
+
+router.post("/create", (req, res) => {
+    if (!check_body_schema(req.body, createBodySchema)) {
+        res.status(400).send("Invalid request body");
+        return false;
+    }
+
+    sql.connect(config, async err => {
+        if (err) {
+            console.log(err)
+        } else {
+            // do if username doenst already exists do this, otherwise error message.
+            // to check username do SQL query SELECT * FROM users WHERE username = req.body.username and do count
+            var sql_check = await sql.query(`SELECT COUNT(username) FROM users WHERE username ='${req.body.username}'`)
+            const recordset = sql_check.recordset;
+            const username_instances = recordset[0]['']
+            if (username_instances > 0){
+                res.status(400).send("Username already exists");
+                return false;
+            }
+            else{
+                sql.query(`INSERT INTO users VALUES (
+                    '${req.body.username}',
+                    '${req.body.password}',
+                    '${req.body.first_name}',
+                    '${req.body.last_name}',
+                    '${req.body.address}',
+                    '${req.body.date_of_birth}',
+                    '${req.body.user_type}'
+                )`).then(_ => {
+                    res.status(200).send("success");
+                    return true;
+                }).catch(err => {
+                    console.log(err);
+                    res.status(500).send("could not add user");
+                    return false;
+                })
+            }
+        }
+    })
+})
 
 module.exports = router;
