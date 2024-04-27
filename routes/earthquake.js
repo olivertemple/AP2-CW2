@@ -198,18 +198,25 @@ const countTypeSchema = {
 router.get("/count_type", (req, res) => {
     let search_params = req.body;
 
-    if (!check_body_schema(search_params, countTypeSchema)) {
-        res.status(400).send("Invalid request body");
+    let errors =check_body_schema(search_params, countTypeSchema);
+    if (errors.length > 0) {
+        res.status(400).json({message: "Invalid request body", errors:errors});
         return false;
     }
 
+    if (new Date(search_params['start_date']) > new Date(search_params['end_date'])) {
+        res.status(400).send("start date is after end date");
+        return false;
+    }
+    
+    let start_date = search_params['start_date'].split("-").join("-");
+    let end_date = search_params['end_date'].split("-").join("-");
+
     sql.connect(config, async err => {
         if (err){
-            loggers.error(`Cannot connect to sql server - ${err}`)
+            res.status(500).send(err);
             return false;
         } else {
-            let start_date = search_params['start_date'].split("-").join("-");
-            let end_date = search_params['end_date'].split("-").join("-");
             sql.query(`SELECT EarthquakeType, COUNT(id) as 'count' FROM EarthquakeData WHERE \
                     EventDate BETWEEN '${start_date}' AND '${end_date}' \
                     GROUP BY EarthquakeType`
@@ -230,18 +237,25 @@ const countWaveSchema = {
 router.get("/count_wave", (req, res) => {
     let search_params = req.body;
 
-    if (!check_body_schema(search_params, countWaveSchema)) {
-        res.status(400).send("Invalid request body");
+    let errors = check_body_schema(search_params, countWaveSchema);
+    if (errors.length < 0) {
+        res.status(400).json({message: "Invalid request body", errors: errors});
         return false;
     }
 
+    if (new Date(search_params['start_date']) > new Date(search_params['end_date'])) {
+        res.status(400).send("start date is after end date");
+        return false;
+    }
+
+    let start_date = search_params['start_date'].split("-").join("-");
+    let end_date = search_params['end_date'].split("-").join("-");
+
     sql.connect(config, async err => {
         if (err){
-            loggers.error(`Cannot connect to sql server - ${err}`)
+            res.status(500).send(err);
             return false;
         } else {
-            let start_date = search_params['start_date'].split("-").join("-");
-            let end_date = search_params['end_date'].split("-").join("-");
             sql.query(`SELECT SeismicWaveType, COUNT(id) as 'count' FROM EarthquakeData WHERE \
                     EventDate BETWEEN '${start_date}' AND '${end_date}' \
                     GROUP BY SeismicWaveType`
