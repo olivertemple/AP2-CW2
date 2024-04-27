@@ -29,8 +29,9 @@ const searchSchema = {
 router.get("/search", (req, res) => {
     let search_params = req.body;
 
-    if (!check_body_schema(search_params, searchSchema)) {
-        res.status(400).send("Invalid request body");
+    let errors = check_body_schema(search_params, searchSchema);
+    if (errors.length > 0) {
+        res.status(400).json({message: "Invalid request body", errors: errors});
         return false;
     }
 
@@ -55,10 +56,6 @@ router.get("/search", (req, res) => {
             res.status(500).send(err);
         } else {
             sql.query(query).then(sql_res => {
-                if (sql_res.recordset.length == 0) {
-                    res.status(400).send("no users found");
-                    return false;
-                }
                 res.json(sql_res.recordset);
                 return true;
             }).catch(err => {

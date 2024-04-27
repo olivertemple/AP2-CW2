@@ -32,8 +32,9 @@ const createBodySchema = {
 }
 
 router.post("/create", (req, res) => {
-    if (!check_body_schema(req.body, createBodySchema)) {
-        res.status(400).send("Invalid request body");
+    let errors = check_body_schema(req.body, createBodySchema);
+    if (errors.length > 0) {
+        res.status(400).json({message: "Invalid request body", errors: errors});
         return false;
     }
 
@@ -75,14 +76,19 @@ const searchSchema = {
 router.get("/search", (req, res) => {
     let search_params = req.body;
 
-    if (!check_body_schema(search_params, searchSchema)) {
-        res.status(400).send("Invalid request body - please include an operator (AND or OR) for the search");
+    let errors = check_body_schema(search_params, searchSchema);
+    if (errors.length > 0) {
+        res.status(400).json({message: "Invalid request body", errors: errors});
         return false;
     }
 
     let sql_query = [];
     let keys = Object.keys(search_params);
 
+    if ((keys.includes("start_date") && !keys.includes("end_date")) || (!keys.includes("start_date") && keys.includes("end_date"))){
+        res.status(400).send("if one of start_date or end_date is present then both are required");
+        return false
+    }
     if (keys.includes("start_date") && keys.includes("end_date")) {
         if (new Date(search_params['start_date']) > new Date(search_params['end_date'])) {
             res.status(400).send("start date is after end date");
@@ -94,7 +100,16 @@ router.get("/search", (req, res) => {
         sql_query.push(`(EventDate BETWEEN '${start_date}' AND '${end_date}')`);
     }
 
+    if ((keys.includes("magnitude_max") && !keys.includes("magnitude_min")) || (!keys.includes("magnitude_max") && keys.includes("magnitude_min"))){
+        res.status(400).send("if one of magnitude_max or magnitude_min is present then both are required");
+        return false;
+    }
+
     if (keys.includes("magnitude_max") && keys.includes("magnitude_min")) {
+        if (searchRadiusSchema.magnitude_max < search_params.magnitude_min){
+            res.status(400).send("maximum magnitude is less than minimum magnitude");
+            return false;
+        }
         sql_query.push(`(magnitude BETWEEN ${search_params['magnitude_min']} AND ${search_params['magnitude_max']})`);
     }
 
@@ -123,10 +138,6 @@ router.get("/search", (req, res) => {
             return false;
         } else {
             sql.query(query).then(sql_res => {
-                if (sql_res.recordset.length == 0) {
-                    res.status(200).json([]);
-                    return false;
-                }
                 res.json(sql_res.recordset);
                 return true;
             }).catch(err => {
@@ -146,8 +157,9 @@ const searchRadiusSchema = {
 router.get("/search_radius", (req, res) => {
     let search_params = req.body;
 
-    if (!check_body_schema(search_params, searchRadiusSchema)) {
-        res.status(400).send("Invalid request body - please include an operator (AND or OR) for the search");
+    let errors = check_body_schema(search_params, searchRadiusSchema);
+    if (errors.length > 0) {
+        res.status(400).json({message: "Invalid request body", errors: errors});
         return false;
     }
 
@@ -162,10 +174,6 @@ router.get("/search_radius", (req, res) => {
                     latitude < ${search_params.latitude + search_params.radius} AND
                     latitude > ${search_params.latitude - search_params.radius}
                 )`).then(sql_res => {
-                if (sql_res.recordset.length == 0) {
-                    res.status(400).send("no earthquakes found");
-                    return false;
-                }
                 let resp = [];
                 for (let i in sql_res.recordset) {
                     let item = sql_res.recordset[i];
