@@ -95,7 +95,7 @@ router.post("/create", (req, res) => {
             const recordset = sql_check.recordset;
             const username_instances = recordset[0]['']
             if (username_instances > 0){
-                res.status(202).send("Username already exists");
+                res.status(400).send("Username already exists");
                 return false;
             }
             else{
