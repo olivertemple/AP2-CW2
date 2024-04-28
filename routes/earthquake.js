@@ -43,6 +43,12 @@ router.post("/create", (req, res) => {
             res.status(500).send(err);
             return false;
         } else {
+            let observatory_exists = await sql.query(`SELECT COUNT(*) as 'count' FROM ObservatoryData WHERE ObservatoryID = ${req.body.observatory_id}`)
+            if (!observatory_exists.recordset[0].count){
+                res.status(400).json({message: `Observatory with id ${req.body.observatory_id} does not exist`})
+                return false;
+            }
+
             sql.query(`INSERT INTO EarthquakeData VALUES (
                 '${req.body.datetime}',
                 ${req.body.magnitude},
