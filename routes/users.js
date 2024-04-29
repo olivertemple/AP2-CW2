@@ -3,6 +3,8 @@ const { check_body_schema } = require("../utils/services");
 const router = express.Router();
 const sql = require("mssql");
 const dotenv = require('dotenv');
+const bcrypt = require('bcrypt');
+
 dotenv.config();
 
 var config = {
@@ -96,25 +98,26 @@ router.post("/create", (req, res) => {
                     res.status(400).send("Username already exists");
                     return false;
                 }
-                else{
-                    sql.query(`INSERT INTO users VALUES (
-                        '${req.body.username}',
-                        '${req.body.password}',
-                        '${req.body.first_name}',
-                        '${req.body.last_name}',
-                        '${req.body.address}',
-                        '${req.body.date_of_birth}',
-                        '${req.body.user_type}',
-                        '',
-                        ''
-                    )`).then(_ => {
-                        res.status(200).send("success");
-                        return true;
-                    }).catch(err => {
-                        res.status(500).send(`could not add user, ${err}`);
-                        return false;
-                    })
-                }
+                
+                let salt = bcrypt.genSaltSync(10);
+                let access_token = bcrypt.hashSync(req.body.username, salt).substring(0, 30);
+                sql.query(`INSERT INTO users VALUES (
+                    '${req.body.username}',
+                    '${req.body.password}',
+                    '${req.body.first_name}',
+                    '${req.body.last_name}',
+                    '${req.body.address}',
+                    '${req.body.date_of_birth}',
+                    '${req.body.user_type}',
+                    'email@domain.com',
+                    '${access_token}'
+                )`).then(_ => {
+                    res.status(200).send("success");
+                    return true;
+                }).catch(err => {
+                    res.status(500).send(`could not add user, ${err}`);
+                    return false;
+                })
             } catch (err) {
                 res.status(500).send(err);
             }
