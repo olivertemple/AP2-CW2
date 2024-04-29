@@ -100,8 +100,8 @@ router.post("/create", (req, res) => {
                     return false;
                 }
 
-                let email_check = await sql.query(`SELECT COUNT(email) FROM users WHERE email = ${req.body.email}`);
-                if (email_check.recordset[0]['' > 0]){
+                let email_check = await sql.query(`SELECT COUNT(email) FROM users WHERE email = '${req.body.email}'`);
+                if (email_check.recordset[0][''] > 0){
                     res.status(400).send("email in use");
                     return false;
                 }
