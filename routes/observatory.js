@@ -28,8 +28,9 @@ const createBodySchema = {
 }
 
 router.post("/create", (req, res) => {
-    if (!check_body_schema(req.body, createBodySchema)) {
-        res.status(400).send("Invalid request body");
+    let errors = check_body_schema(req.body, createBodySchema);
+    if (errors.length > 0) {
+        res.status(400).json({message: "Invalid request body", errors: errors});
     }
 
     sql.connect(config, async err => {
@@ -63,10 +64,6 @@ router.get("/largest_magnitude", (req, res) => {
             return false;
         }else{
             sql.query(`SELECT * from EarthquakeData e WHERE e.magnitude = (SELECT MAX(magnitude) FROM EarthquakeData WHERE ObservatoryId = ${observatory_id}) `).then(sql_res => {
-                if (sql_res.recordset.length == 0){
-                    res.status(400).send(`No earthquakes found with observatory id of ${observatory_id}`);
-                    return false;
-                }
                 res.json(sql_res.recordset);
                 return true;
             }).catch(err => {
@@ -90,10 +87,6 @@ router.get("/average_magnitude", (req, res) => {
             return false;
         }else{
             sql.query(`SELECT AVG(magnitude) FROM EarthquakeData WHERE ObservatoryId = ${observatory_id}`).then(sql_res => {
-                if (sql_res.recordset[0][''] == null){
-                    res.status(400).send(`No earthquakes found with observatory id of ${observatory_id}`);
-                    return false;
-                }
                 res.json({"average_magnitude": sql_res.recordset[0]['']});
                 return true;
             }).catch(err => {
@@ -118,10 +111,6 @@ router.get("/average_number", (req, res) => {
         } else {
             try {
                 let sql_res_count = await sql.query(`SELECT COUNT(id) FROM EarthquakeData WHERE ObservatoryId = ${observatory_id} GROUP BY YEAR(EventDate)`)
-                if (sql_res_count.recordset.length == 0) {
-                    res.status(400).send(`No earthquakes found with observatory id of ${observatory_id}`);
-                    return false;
-                }
 
                 let total = 0;
                 for (let i in sql_res_count.recordset) {

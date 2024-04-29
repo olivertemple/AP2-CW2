@@ -29,8 +29,9 @@ const searchSchema = {
 router.get("/search", (req, res) => {
     let search_params = req.body;
 
-    if (!check_body_schema(search_params, searchSchema)) {
-        res.status(400).send("Invalid request body");
+    let errors = check_body_schema(search_params, searchSchema);
+    if (errors.length > 0) {
+        res.status(400).json({message: "Invalid request body", errors: errors});
         return false;
     }
 
@@ -55,10 +56,6 @@ router.get("/search", (req, res) => {
             res.status(500).send(err);
         } else {
             sql.query(query).then(sql_res => {
-                if (sql_res.recordset.length == 0) {
-                    res.status(400).send("no users found");
-                    return false;
-                }
                 res.json(sql_res.recordset);
                 return true;
             }).catch(err => {
@@ -79,42 +76,47 @@ const createBodySchema = {
 }
 
 router.post("/create", (req, res) => {
-    if (!check_body_schema(req.body, createBodySchema)) {
-        res.status(400).send("Invalid request body");
+    let errors = check_body_schema(req.body, createBodySchema);
+    if (errors.length > 0) {
+        res.status(400).json({message: "Invalid request body", errors: errors});
         return false;
     }
 
     sql.connect(config, async err => {
         if (err) {
-            console.log(err)
+            res.status(500).send(err);
         } else {
             // do if username doenst already exists do this, otherwise error message.
             // to check username do SQL query SELECT * FROM users WHERE username = req.body.username and do count
-            var sql_check = await sql.query(`SELECT COUNT(username) FROM users WHERE username ='${req.body.username}'`)
-            const recordset = sql_check.recordset;
-            const username_instances = recordset[0]['']
-            if (username_instances > 0){
-                res.status(400).send("Username already exists");
-                return false;
-            }
-            else{
-                sql.query(`INSERT INTO users VALUES (
-                    '${req.body.username}',
-                    '${req.body.password}',
-                    '${req.body.first_name}',
-                    '${req.body.last_name}',
-                    '${req.body.address}',
-                    '${req.body.date_of_birth}',
-                    '${req.body.user_type}'
-                )`).then(_ => {
-                    res.status(200).send("success");
-                    return true;
-                }).catch(err => {
-                    console.log(err);
-                    res.status(500).send("could not add user");
+            try{
+                var sql_check = await sql.query(`SELECT COUNT(username) FROM users WHERE username ='${req.body.username}'`)
+                const recordset = sql_check.recordset;
+                const username_instances = recordset[0]['']
+                if (username_instances > 0){
+                    res.status(400).send("Username already exists");
                     return false;
-                })
+                }
+                else{
+                    sql.query(`INSERT INTO users VALUES (
+                        '${req.body.username}',
+                        '${req.body.password}',
+                        '${req.body.first_name}',
+                        '${req.body.last_name}',
+                        '${req.body.address}',
+                        '${req.body.date_of_birth}',
+                        '${req.body.user_type}'
+                    )`).then(_ => {
+                        res.status(200).send("success");
+                        return true;
+                    }).catch(err => {
+                        res.status(500).send(`could not add user, ${err}`);
+                        return false;
+                    })
+                }
+            } catch (err) {
+                res.status(500).send(err);
             }
+            
         }
     })
 })

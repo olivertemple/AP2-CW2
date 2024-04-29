@@ -67,6 +67,8 @@ sql.connect(config, async err => {
         const app = express();
         app.use((_,res,next) => {
             res.setHeader("Access-Control-Allow-Origin", "*")
+            res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization")
+            res.setHeader("Access-Control-Allow-Methods", "*")
             next();
         })
         app.use(express.json()) //This parses incoming requests as JSON payloads

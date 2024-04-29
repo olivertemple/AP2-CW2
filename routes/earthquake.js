@@ -32,8 +32,9 @@ const createBodySchema = {
 }
 
 router.post("/create", (req, res) => {
-    if (!check_body_schema(req.body, createBodySchema)) {
-        res.status(400).send("Invalid request body");
+    let errors = check_body_schema(req.body, createBodySchema);
+    if (errors.length > 0) {
+        res.status(400).json({message: "Invalid request body", errors: errors});
         return false;
     }
 
@@ -42,6 +43,12 @@ router.post("/create", (req, res) => {
             res.status(500).send(err);
             return false;
         } else {
+            let observatory_exists = await sql.query(`SELECT COUNT(*) as 'count' FROM ObservatoryData WHERE ObservatoryID = ${req.body.observatory_id}`)
+            if (!observatory_exists.recordset[0].count){
+                res.status(400).json({message: `Observatory with id ${req.body.observatory_id} does not exist`})
+                return false;
+            }
+
             sql.query(`INSERT INTO EarthquakeData VALUES (
                 '${req.body.datetime}',
                 ${req.body.magnitude},
@@ -75,14 +82,19 @@ const searchSchema = {
 router.get("/search", (req, res) => {
     let search_params = req.body;
 
-    if (!check_body_schema(search_params, searchSchema)) {
-        res.status(400).send("Invalid request body - please include an operator (AND or OR) for the search");
+    let errors = check_body_schema(search_params, searchSchema);
+    if (errors.length > 0) {
+        res.status(400).json({message: "Invalid request body", errors: errors});
         return false;
     }
 
     let sql_query = [];
     let keys = Object.keys(search_params);
 
+    if ((keys.includes("start_date") && !keys.includes("end_date")) || (!keys.includes("start_date") && keys.includes("end_date"))){
+        res.status(400).send("if one of start_date or end_date is present then both are required");
+        return false
+    }
     if (keys.includes("start_date") && keys.includes("end_date")) {
         if (new Date(search_params['start_date']) > new Date(search_params['end_date'])) {
             res.status(400).send("start date is after end date");
@@ -94,7 +106,16 @@ router.get("/search", (req, res) => {
         sql_query.push(`(EventDate BETWEEN '${start_date}' AND '${end_date}')`);
     }
 
+    if ((keys.includes("magnitude_max") && !keys.includes("magnitude_min")) || (!keys.includes("magnitude_max") && keys.includes("magnitude_min"))){
+        res.status(400).send("if one of magnitude_max or magnitude_min is present then both are required");
+        return false;
+    }
+
     if (keys.includes("magnitude_max") && keys.includes("magnitude_min")) {
+        if (searchRadiusSchema.magnitude_max < search_params.magnitude_min){
+            res.status(400).send("maximum magnitude is less than minimum magnitude");
+            return false;
+        }
         sql_query.push(`(magnitude BETWEEN ${search_params['magnitude_min']} AND ${search_params['magnitude_max']})`);
     }
 
@@ -123,10 +144,6 @@ router.get("/search", (req, res) => {
             return false;
         } else {
             sql.query(query).then(sql_res => {
-                if (sql_res.recordset.length == 0) {
-                    res.status(200).json([]);
-                    return false;
-                }
                 res.json(sql_res.recordset);
                 return true;
             }).catch(err => {
@@ -146,8 +163,9 @@ const searchRadiusSchema = {
 router.get("/search_radius", (req, res) => {
     let search_params = req.body;
 
-    if (!check_body_schema(search_params, searchRadiusSchema)) {
-        res.status(400).send("Invalid request body - please include an operator (AND or OR) for the search");
+    let errors = check_body_schema(search_params, searchRadiusSchema);
+    if (errors.length > 0) {
+        res.status(400).json({message: "Invalid request body", errors: errors});
         return false;
     }
 
@@ -162,10 +180,6 @@ router.get("/search_radius", (req, res) => {
                     latitude < ${search_params.latitude + search_params.radius} AND
                     latitude > ${search_params.latitude - search_params.radius}
                 )`).then(sql_res => {
-                if (sql_res.recordset.length == 0) {
-                    res.status(400).send("no earthquakes found");
-                    return false;
-                }
                 let resp = [];
                 for (let i in sql_res.recordset) {
                     let item = sql_res.recordset[i];
@@ -190,18 +204,25 @@ const countTypeSchema = {
 router.get("/count_type", (req, res) => {
     let search_params = req.body;
 
-    if (!check_body_schema(search_params, countTypeSchema)) {
-        res.status(400).send("Invalid request body");
+    let errors =check_body_schema(search_params, countTypeSchema);
+    if (errors.length > 0) {
+        res.status(400).json({message: "Invalid request body", errors:errors});
         return false;
     }
 
+    if (new Date(search_params['start_date']) > new Date(search_params['end_date'])) {
+        res.status(400).send("start date is after end date");
+        return false;
+    }
+    
+    let start_date = search_params['start_date'].split("-").join("-");
+    let end_date = search_params['end_date'].split("-").join("-");
+
     sql.connect(config, async err => {
         if (err){
-            loggers.error(`Cannot connect to sql server - ${err}`)
+            res.status(500).send(err);
             return false;
         } else {
-            let start_date = search_params['start_date'].split("-").join("-");
-            let end_date = search_params['end_date'].split("-").join("-");
             sql.query(`SELECT EarthquakeType, COUNT(id) as 'count' FROM EarthquakeData WHERE \
                     EventDate BETWEEN '${start_date}' AND '${end_date}' \
                     GROUP BY EarthquakeType`
@@ -222,18 +243,25 @@ const countWaveSchema = {
 router.get("/count_wave", (req, res) => {
     let search_params = req.body;
 
-    if (!check_body_schema(search_params, countWaveSchema)) {
-        res.status(400).send("Invalid request body");
+    let errors = check_body_schema(search_params, countWaveSchema);
+    if (errors.length < 0) {
+        res.status(400).json({message: "Invalid request body", errors: errors});
         return false;
     }
 
+    if (new Date(search_params['start_date']) > new Date(search_params['end_date'])) {
+        res.status(400).send("start date is after end date");
+        return false;
+    }
+
+    let start_date = search_params['start_date'].split("-").join("-");
+    let end_date = search_params['end_date'].split("-").join("-");
+
     sql.connect(config, async err => {
         if (err){
-            loggers.error(`Cannot connect to sql server - ${err}`)
+            res.status(500).send(err);
             return false;
         } else {
-            let start_date = search_params['start_date'].split("-").join("-");
-            let end_date = search_params['end_date'].split("-").join("-");
             sql.query(`SELECT SeismicWaveType, COUNT(id) as 'count' FROM EarthquakeData WHERE \
                     EventDate BETWEEN '${start_date}' AND '${end_date}' \
                     GROUP BY SeismicWaveType`
