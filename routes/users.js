@@ -74,7 +74,8 @@ const createBodySchema = {
     last_name: ['string', true],
     address: ['string', true],
     date_of_birth: ["string", true],
-    user_type: ["string", true]
+    user_type: ["string", true],
+    email: ["string", true]
 }
 
 router.post("/create", (req, res) => {
@@ -98,6 +99,12 @@ router.post("/create", (req, res) => {
                     res.status(400).send("Username already exists");
                     return false;
                 }
+
+                let email_check = await sql.query(`SELECT COUNT(email) FROM users WHERE email = ${req.body.email}`);
+                if (email_check.recordset[0]['' > 0]){
+                    res.status(400).send("email in use");
+                    return false;
+                }
                 
                 let salt = bcrypt.genSaltSync(10);
                 let access_token = bcrypt.hashSync(req.body.username, salt).substring(0, 30);
@@ -109,7 +116,7 @@ router.post("/create", (req, res) => {
                     '${req.body.address}',
                     '${req.body.date_of_birth}',
                     '${req.body.user_type}',
-                    'email@domain.com',
+                    '${req.body.email}',
                     '${access_token}'
                 )`).then(_ => {
                     res.status(200).json({access_token: access_token});
