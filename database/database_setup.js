@@ -21,8 +21,8 @@ let earthquakeTable = "CREATE TABLE EarthquakeData ( \
     Longitude FLOAT NOT NULL, \
     Latitude FLOAT NOT NULL, \
     ObservatoryId INT FOREIGN KEY REFERENCES ObservatoryData(ObservatoryId) NOT NULL, \
-    EarthquakeType VARCHAR(50) NOT NULL, \
-    SeismicWaveType VARCHAR(50) NOT NULL \
+    EarthquakeType VARCHAR(50) CHECK (EarthquakeType IN ('tectonic', 'collapse', 'explosion')) NOT NULL, \
+    SeismicWaveType VARCHAR(50) CHECK (SeismicWaveType IN ('p', 's', 'love', 'rayleigh')) NOT NULL \
 );"
 
 let usersTable = "CREATE TABLE users ( \
@@ -34,7 +34,7 @@ let usersTable = "CREATE TABLE users ( \
     address VARCHAR(100) NOT NULL, \
     date_of_birth DATE NOT NULL, \
     user_type VARCHAR(20) CHECK (user_type IN ('general', 'junior scientist', 'senior scientist', 'admin')) NOT NULL, \
-    email VARCHAR(50) NOT NULL \
+    email VARCHAR(50) NOT NULL, \
     access_token VARCHAR(50) NOT NULL\
 );"
 

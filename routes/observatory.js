@@ -33,10 +33,19 @@ router.post("/create", (req, res) => {
         res.status(400).json({message: "Invalid request body", errors: errors});
     }
 
+    console.log(req.body)
+
     sql.connect(config, async err => {
         if (err){
             res.status(500).send(err);
         }else{
+            console.log(`INSERT INTO ObservatoryData VALUES (
+                '${req.body.name}',
+                '${req.body.country}',
+                ${req.body.latitude},
+                ${req.body.longitude},
+                '${req.body.date_established}'
+            )`)
             sql.query(`INSERT INTO ObservatoryData VALUES (
                 '${req.body.name}',
                 '${req.body.country}',

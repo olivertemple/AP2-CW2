@@ -104,7 +104,9 @@ router.post("/create", (req, res) => {
                         '${req.body.last_name}',
                         '${req.body.address}',
                         '${req.body.date_of_birth}',
-                        '${req.body.user_type}'
+                        '${req.body.user_type}',
+                        '',
+                        ''
                     )`).then(_ => {
                         res.status(200).send("success");
                         return true;
