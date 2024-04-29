@@ -26,7 +26,7 @@ let earthquakeTable = "CREATE TABLE EarthquakeData ( \
 );"
 
 let usersTable = "CREATE TABLE users ( \
-    user_id INT NOT NULL, \
+    user_id INT IDENTITY PRIMARY KEY NOT NULL, \
     username VARCHAR(25) NOT NULL, \
     password VARCHAR(30) NOT NULL, \
     first_name VARCHAR(50) NOT NULL, \
@@ -34,7 +34,8 @@ let usersTable = "CREATE TABLE users ( \
     address VARCHAR(100) NOT NULL, \
     date_of_birth DATE NOT NULL, \
     user_type VARCHAR(20) CHECK (user_type IN ('general', 'junior scientist', 'senior scientist', 'admin')) NOT NULL, \
-    PRIMARY KEY(user_id) \
+    email VARCHAR(50) NOT NULL \
+    access_token VARCHAR(50) NOT NULL\
 );"
 
 let observatoryTable = "CREATE TABLE ObservatoryData ( \
