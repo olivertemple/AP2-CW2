@@ -104,6 +104,7 @@ router.post("/create", (req, res) => {
                 if (email_check.recordset[0][''] > 0){
                     res.status(400).send("email in use");
                     return false;
+
                 }
                 
                 let salt = bcrypt.genSaltSync(10);
