@@ -275,4 +275,19 @@ router.get("/count_wave", (req, res) => {
     })
 })
 
+router.get("/all_earthquakes", (req, res) => {
+    sql.connect(config, async err => {
+        if (err) {
+            res.status(500).send(err);
+            return false;
+        } else {
+            sql.query("SELECT * FROM EarthquakeData").then(sql_res => {
+                res.json(sql_res.recordset);
+            }).catch(err => {
+                res.status(500).send(err);
+            })
+        }
+    })
+})
+
 module.exports = router;
