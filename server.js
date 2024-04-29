@@ -105,15 +105,19 @@ sql.connect(config, async err => {
                 res.status(401).send("no access token")
                 return false;
             }
-            let access_level_req = await sql.query(`SELECT user_type FROM users WHERE access_token = '${access_token}'`);
-            let access_level = access_level_req.recordset[0]?.user_type;
-
-            if (!access_level){
-                res.status(401).send("access denied");
-                return false;
+            try {
+                let access_level_req = await sql.query(`SELECT user_type FROM users WHERE access_token = '${access_token}'`);
+                let access_level = access_level_req.recordset[0]?.user_type;
+    
+                if (!access_level){
+                    res.status(401).send("access denied");
+                    return false;
+                }
+    
+                next();
+            } catch (err) {
+                res.status(500).send(err);
             }
-
-            next();
         })
 
         //If there is no build in the ./frontend_build/ folder then this won't work. You can download the latest stable build from github
