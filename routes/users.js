@@ -112,7 +112,7 @@ router.post("/create", (req, res) => {
                     'email@domain.com',
                     '${access_token}'
                 )`).then(_ => {
-                    res.status(200).send("success");
+                    res.status(200).json({access_token: access_token});
                     return true;
                 }).catch(err => {
                     res.status(500).send(`could not add user, ${err}`);
