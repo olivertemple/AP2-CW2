@@ -72,7 +72,9 @@ const createBodySchema = {
     last_name: ['string', true],
     address: ['string', true],
     date_of_birth: ["string", true],
-    user_type: ["string", true]
+    user_type: ["string", true],
+    email: ["string", true],
+    access_token: ["string", true]
 }
 
 router.post("/create", (req, res) => {
@@ -105,8 +107,8 @@ router.post("/create", (req, res) => {
                         '${req.body.address}',
                         '${req.body.date_of_birth}',
                         '${req.body.user_type}',
-                        '',
-                        ''
+                        '${req.body.user_type}',
+                        ''${req.body.access_token}
                     )`).then(_ => {
                         res.status(200).send("success");
                         return true;
