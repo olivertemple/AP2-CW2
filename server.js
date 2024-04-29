@@ -99,6 +99,23 @@ sql.connect(config, async err => {
             
         })
 
+        app.use(async (req, res, next) => {
+            const access_token = req.headers['access-token']
+            if (!access_token){
+                res.status(401).send("no access token")
+                return false;
+            }
+            let access_level_req = await sql.query(`SELECT user_type FROM users WHERE access_token = '${access_token}'`);
+            let access_level = access_level_req.recordset[0]?.user_type;
+
+            if (!access_level){
+                res.status(401).send("access denied");
+                return false;
+            }
+
+            next();
+        })
+
         //If there is no build in the ./frontend_build/ folder then this won't work. You can download the latest stable build from github
         app.use(express.static(path.resolve(__dirname, "./frontend_build/www"))) //This is to serve the ionic page
 
