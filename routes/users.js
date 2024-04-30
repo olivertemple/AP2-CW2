@@ -3,6 +3,8 @@ const { check_body_schema } = require("../utils/services");
 const router = express.Router();
 const sql = require("mssql");
 const dotenv = require('dotenv');
+const bcrypt = require('bcrypt');
+
 dotenv.config();
 
 var config = {
@@ -72,7 +74,8 @@ const createBodySchema = {
     last_name: ['string', true],
     address: ['string', true],
     date_of_birth: ["string", true],
-    user_type: ["string", true]
+    user_type: ["string", true],
+    email: ["string", true]
 }
 
 router.post("/create", (req, res) => {
@@ -101,29 +104,32 @@ router.post("/create", (req, res) => {
                     res.status(400).send("Username already exists");
                     return false;
                 }
-                else if (email_instances > 0) {
+              
+                if (email_instances > 0) {
                     res.status(400).send("This email is already being used for another account");
                     return false;
                 }
-                else{
-                    sql.query(`INSERT INTO users VALUES (
-                        '${req.body.username}',
-                        '${req.body.password}',
-                        '${req.body.first_name}',
-                        '${req.body.last_name}',
-                        '${req.body.address}',
-                        '${req.body.date_of_birth}',
-                        '${req.body.user_type}',
-                        '',
-                        ''
-                    )`).then(_ => {
-                        res.status(200).send("success");
-                        return true;
-                    }).catch(err => {
-                        res.status(500).send(`could not add user, ${err}`);
-                        return false;
-                    })
-                }
+                
+                let salt = bcrypt.genSaltSync(10);
+                let access_token = bcrypt.hashSync(req.body.username, salt).substring(0, 30);
+              
+                sql.query(`INSERT INTO users VALUES (
+                    '${req.body.username}',
+                    '${req.body.password}',
+                    '${req.body.first_name}',
+                    '${req.body.last_name}',
+                    '${req.body.address}',
+                    '${req.body.date_of_birth}',
+                    '${req.body.user_type}',
+                    '${req.body.email}',
+                    '${access_token}'
+                )`).then(_ => {
+                    res.status(200).json({access_token: access_token});
+                    return true;
+                }).catch(err => {
+                    res.status(500).send(`could not add user, ${err}`);
+                    return false;
+                })
             } catch (err) {
                 res.status(500).send(err);
             }

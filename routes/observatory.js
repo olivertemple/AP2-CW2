@@ -134,4 +134,19 @@ router.get("/average_number", (req, res) => {
     })
 })
 
+router.get("/all_observatories", (req, res) => {
+    sql.connect(config, async err => {
+        if (err) {
+            res.status(500).send(err);
+            return false;
+        } else {
+            sql.query("SELECT * FROM ObservatoryData").then(sql_res => {
+                res.json(sql_res.recordset);
+            }).catch(err => {
+                res.status(500).send(err);
+            })
+        }
+    })
+})
+
 module.exports = router;
