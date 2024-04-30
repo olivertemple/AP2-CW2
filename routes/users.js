@@ -89,8 +89,6 @@ router.post("/create", (req, res) => {
         if (err) {
             res.status(500).send(err);
         } else {
-            // do if username doenst already exists do this, otherwise error message.
-            // to check username do SQL query SELECT * FROM users WHERE username = req.body.username and do count
             try{
                 var username_check = await sql.query(`SELECT COUNT(username) FROM users WHERE username ='${req.body.username}'`)
                 const username_recordset = username_check.recordset;

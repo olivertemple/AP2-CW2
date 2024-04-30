@@ -44,7 +44,7 @@ const logger = loggers.get("api_logger");
 
 const earthquakeRoutes = require("./routes/earthquake");
 const observatoryRoutes = require("./routes/observatory");
-const samplesRoutes = require("./routes/samples");
+const specimenRoutes = require("./routes/specimens");
 const usersRoutes = require("./routes/users");
 const exampleRoutes = require("./routes/example_endpoints");
 
@@ -104,7 +104,7 @@ sql.connect(config, async err => {
 
         app.use("/api/earthquake", earthquakeRoutes);
         app.use("/api/observatory", observatoryRoutes);
-        app.use("/api/samples", samplesRoutes);
+        app.use("/api/specimen", specimenRoutes);
         app.use("/api/users", usersRoutes);
         app.use("/api/examples", exampleRoutes);
         app.listen(port, (err) => {
