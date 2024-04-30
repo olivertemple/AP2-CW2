@@ -88,6 +88,7 @@ router.post("/create", (req, res) => {
     sql.connect(config, async err => {
         if (err) {
             res.status(500).send(err);
+            return false;
         } else {
             // do if username doenst already exists do this, otherwise error message.
             // to check username do SQL query SELECT * FROM users WHERE username = req.body.username and do count
@@ -104,7 +105,7 @@ router.post("/create", (req, res) => {
                     res.status(400).send("Username already exists");
                     return false;
                 }
-              
+
                 if (email_instances > 0) {
                     res.status(400).send("This email is already being used for another account");
                     return false;
@@ -112,7 +113,7 @@ router.post("/create", (req, res) => {
                 
                 let salt = bcrypt.genSaltSync(10);
                 let access_token = bcrypt.hashSync(req.body.username, salt).substring(0, 30);
-              
+
                 sql.query(`INSERT INTO users VALUES (
                     '${req.body.username}',
                     '${req.body.password}',
@@ -172,5 +173,40 @@ router.get("/delete", (req, res) => {
         }
     })
 })
+
+const loginBodySchema = {
+    username: ['string', true],
+    password: ['string', true]
+}
+
+router.get("/login", (req, res) => {
+    let errors = check_body_schema(req.body, loginBodySchema);
+    if (errors.length > 0){
+        res.status(400).json({message: "Invalid request body", errors: errors});
+        return false;
+    }
+
+    sql.connect(config, async err => {
+        if (err) {
+            res.status(500).send(err);
+            return false;
+        }
+
+        sql.query(`SELECT access_token FROM users WHERE username='${req.body.username}' AND password='${req.body.password}'`).then(sql_res => {
+            if (sql_res.recordset.length > 0){
+                res.status(200).json(sql_res.recordset[0]);
+                return true;
+            }
+
+            res.status(401).send("invalid credentials")
+            return false;
+        }).catch(err => {
+            res.status(500).send(err);
+            return false;
+        })
+        
+    })
+})
+
 
 module.exports = router;
