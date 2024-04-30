@@ -138,4 +138,39 @@ router.post("/create", (req, res) => {
     })
 })
 
+router.get("/delete", (req, res) => {
+    if (!req.query.id) {
+        res.status(400).send("no id sent");
+        return false;
+    }
+
+    if (!parseInt(req.query.id, 10)) {
+        res.status(400).send("invalid id");
+        return false;
+    }
+
+    let user_id = req.query.id;
+    
+    sql.connect(config, async err => {
+        if (err) {
+            res.status(500).send(err);
+            return false;
+        }
+
+        try {
+            let sql_res = await sql.query(`SELECT * FROM users WHERE user_id = ${user_id}`);
+            if (!sql_res.recordset.length) {
+                res.status(400).send(`user with id ${user_id} does not exist`)
+                return false
+            }
+            sql.query(`DELETE FROM users WHERE user_id = ${user_id}`)
+            res.status(200).send(`user ${user_id} deleted`)
+
+        } catch (err) {
+            res.status(500).send(err);
+            return false;
+        }
+    })
+})
+
 module.exports = router;
