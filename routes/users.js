@@ -92,23 +92,27 @@ router.post("/create", (req, res) => {
             // do if username doenst already exists do this, otherwise error message.
             // to check username do SQL query SELECT * FROM users WHERE username = req.body.username and do count
             try{
-                var sql_check = await sql.query(`SELECT COUNT(username) FROM users WHERE username ='${req.body.username}'`)
-                const recordset = sql_check.recordset;
-                const username_instances = recordset[0]['']
+                var username_check = await sql.query(`SELECT COUNT(username) FROM users WHERE username ='${req.body.username}'`)
+                const username_recordset = username_check.recordset;
+                const username_instances = username_recordset[0]['']
+
+                var email_check = await sql.query(`SELECT COUNT(username) FROM users WHERE email ='${req.body.email}'`)
+                const email_recordset = email_check.recordset;
+                const email_instances = email_recordset[0]['']
+
                 if (username_instances > 0){
                     res.status(400).send("Username already exists");
                     return false;
                 }
-
-                let email_check = await sql.query(`SELECT COUNT(email) FROM users WHERE email = '${req.body.email}'`);
-                if (email_check.recordset[0][''] > 0){
-                    res.status(400).send("email in use");
+              
+                if (email_instances > 0) {
+                    res.status(400).send("This email is already being used for another account");
                     return false;
-
                 }
                 
                 let salt = bcrypt.genSaltSync(10);
                 let access_token = bcrypt.hashSync(req.body.username, salt).substring(0, 30);
+              
                 sql.query(`INSERT INTO users VALUES (
                     '${req.body.username}',
                     '${req.body.password}',
