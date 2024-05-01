@@ -79,7 +79,7 @@ const searchSchema = {
     magnitude_max: ["number", false],
     magnitude_min: ["number", false]
 }
-router.get("/search", (req, res) => {
+router.post("/search", (req, res) => {
     let search_params = req.body;
 
     let errors = check_body_schema(search_params, searchSchema);
@@ -165,7 +165,7 @@ const searchRadiusSchema = {
     radius: ["number", true]
 }
 
-router.get("/search_radius", (req, res) => {
+router.post("/search_radius", (req, res) => {
     let search_params = req.body;
 
     let errors = check_body_schema(search_params, searchRadiusSchema);
@@ -206,7 +206,7 @@ const countTypeSchema = {
     start_date: ['string', false],
     end_date: ['string', false]
 }
-router.get("/count_type", (req, res) => {
+router.post("/count_type", (req, res) => {
     let search_params = req.body;
 
     let errors = check_body_schema(search_params, countTypeSchema);
@@ -259,7 +259,7 @@ const countWaveSchema = {
     start_date: ['string', false],
     end_date: ['string', false]
 }
-router.get("/count_wave", (req, res) => {
+router.post("/count_wave", (req, res) => {
     let search_params = req.body;
 
     let errors = check_body_schema(search_params, countWaveSchema);
