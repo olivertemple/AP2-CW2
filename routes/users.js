@@ -28,7 +28,7 @@ const searchSchema = {
     user_id: ["number", false]
 }
 
-router.get("/search", (req, res) => {
+router.post("/search", (req, res) => {
     let search_params = req.body;
 
     let errors = check_body_schema(search_params, searchSchema);
@@ -179,7 +179,7 @@ const loginBodySchema = {
     password: ['string', true]
 }
 
-router.get("/login", (req, res) => {
+router.post("/login", (req, res) => {
     let errors = check_body_schema(req.body, loginBodySchema);
     if (errors.length > 0){
         res.status(400).json({message: "Invalid request body", errors: errors});
