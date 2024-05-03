@@ -82,6 +82,14 @@ const searchSchema = {
 router.post("/search", (req, res) => {
     let search_params = req.body;
 
+    let new_body = {}
+    for (let key in search_params){
+        if (search_params[key] && search_params[key] != ""){
+            new_body[key] = search_params[key];
+        }
+    }
+    search_params = new_body;
+
     let errors = check_body_schema(search_params, searchSchema);
     if (errors.length > 0) {
         res.status(400).json({message: "Invalid request body", errors: errors});
@@ -105,7 +113,6 @@ router.post("/search", (req, res) => {
 
     if (keys.includes("end_date")){
         let end_date = search_params['end_date'];
-        console.log(end_date)
         sql_query.push(`(EventDate < '${end_date}')`);
     }
 
@@ -142,7 +149,6 @@ router.post("/search", (req, res) => {
     }
 
     let query = "SELECT * FROM EarthquakeData WHERE " + sql_query.join(` ${search_params['operator']} `);
-    console.log(query)
     sql.connect(config, async err => {
         if (err) {
             res.status(500).send(err);
