@@ -329,4 +329,38 @@ router.get("/all_earthquakes", (req, res) => {
     })
 })
 
+router.get("/observatory", (req, res) => {
+    if (!req.query.id) {
+        res.status(400).send("no id sent");
+        return false;
+    }
+
+    if (!parseInt(req.query.id)){
+        res.status(400).send("id was not numeric");
+        return false;
+    }
+
+    let observatory_id = req.query.id;
+
+    sql.connect(config, async err => {
+        if (err) {
+            res.status(500).send(err);
+            return false;
+        } else {
+            try {
+                let sql_res = await sql.query(`SELECT * FROM EarthquakeData WHERE ObservatoryId = ${observatory_id}`)
+
+                if (sql_res.recordset.length == 0) {
+                    res.status(400).send(`observatory with id of ${observatory_id} not found`);
+                    return false;
+                }
+
+                res.json(sql_res.recordset);
+            } catch (err) {
+                res.status(500).send(err);
+                return false;
+            }
+        }
+    })
+})
 module.exports = router;
