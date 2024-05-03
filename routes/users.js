@@ -125,7 +125,12 @@ router.post("/create", (req, res) => {
                     '${req.body.email}',
                     '${access_token}'
                 )`).then(_ => {
-                    res.status(200).json({access_token: access_token});
+                    res.status(200).json({
+                        username: req.body.username,
+                        first_name: req.body.first_name,
+                        last_name: req.body.last_name,
+                        user_type: req.body.user_type,
+                        access_token: access_token});
                     return true;
                 }).catch(err => {
                     res.status(500).send(`could not add user, ${err}`);
@@ -192,9 +197,15 @@ router.post("/login", (req, res) => {
             return false;
         }
 
-        sql.query(`SELECT access_token FROM users WHERE username='${req.body.username}' AND password='${req.body.password}'`).then(sql_res => {
+        sql.query(`SELECT * FROM users WHERE username='${req.body.username}' AND password='${req.body.password}'`).then(sql_res => {
             if (sql_res.recordset.length > 0){
-                res.status(200).json(sql_res.recordset[0]);
+                res.status(200).json({
+                    username: sql_res.recordset[0].username,
+                    first_name: sql_res.recordset[0].first_name,
+                    last_name: sql_res.recordset[0].last_name,
+                    user_type: sql_res.recordset[0].user_type,
+                    access_token: sql_res.recordset[0].access_token
+                });
                 return true;
             }
 
