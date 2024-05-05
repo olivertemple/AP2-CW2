@@ -76,4 +76,114 @@ router.post("/create", (req, res) => {
 
 })
 
+// const searchSchema = {
+//     EarthquakeId: ["number", false],
+//     CollectionDate: ['string', false],
+//     SampleType: ["string", false],
+//     Longitude: ['number', false],
+//     Latitude: ['number', false],
+//     Country: ["string", false],
+//     CurrentLocation: ["string", false],
+//     IsSampleRequired: ["boolean", false],
+//     ItemValue: ["number", false],
+//     IsSold: ["boolean", false]
+// }
+
+// router.get("/search", (req, res) => {
+//     let search_params = req.body;
+
+//     let errors = check_body_schema(search_params, searchSchema);
+//     if (errors.length > 0) {
+//         res.status(400).json({message: "Invalid request body", errors: errors});
+//         return false;
+//     }
+
+//     let keys = Object.keys(search_params);
+//     if (keys.length == 0) {
+//         res.status(400).send("Missing search parameters");
+//         return false;
+//     }
+
+//     let query;
+//     if (keys[0] == 'id'){
+//         query = `SELECT * FROM SampleData WHERE user_id = ${search_params[keys[0]]}`;
+//     } else {
+//         query = `SELECT * FROM SampleData WHERE ${keys[0]} = '${search_params[keys[0]]}'`;
+//     }
+    
+//     sql.connect(config, async err => {
+//         if (err) {
+//             res.status(500).send(err);
+//         } else {
+//             sql.query(query).then(sql_res => {
+//                 res.json(sql_res.recordset);
+//                 return true;
+//             }).catch(err => {
+//                 res.status(500).send(err);
+//                 return false;
+//             })
+//         }
+//     })
+// })
+
+deleteSchema = {
+    SampleId: ["number", true]
+}
+
+router.get("/delete", (req, res) => {
+    let delete_params = req.body;
+
+    let errors = check_body_schema(delete_params, deleteSchema);
+    if (errors.length > 0) {
+        res.status(400).json({message: "Invalid request body", errors: errors});
+        return false;
+    }
+
+    let keys = Object.keys(delete_params);
+    if (keys.length == 0) {
+        res.status(400).send("Missing search parameters");
+        return false;
+    }
+
+    let query;
+    query = `DELETE FROM SampleData WHERE SampleId = '${delete_params[keys[0]]}'`
+
+    // sql.connect(config, async err => {
+    //     if (err) {
+    //         res.status(500).send(err);
+    //     } else {
+    //         sql.query(query).then(sql_res => {
+    //             res.json(sql_res.recordset);
+    //             res.status(200).send("Specimen deleted");
+    //             return true;
+    //         }).catch(err => {
+    //             res.status(500).send(err);
+    //             return false;
+    //         })
+    //     }
+    // })
+
+    sql.connect(config, async err => {
+        if (err) {
+            res.status(500).send(err);
+        } else {
+            try{
+
+                sql.query(`DELETE FROM SampleData WHERE SampleId = '${delete_params[keys[0]]}'`
+                ).then(_ => {
+                    res.status(200).send("Specimen deleted");
+                    return true;
+                }).catch(err => {
+                    res.status(500).send(`could not delete specimen, ${err}`);
+                    return false;
+                })
+            } catch (err) {
+                res.status(500).send(err);
+            }
+            
+        }
+    })
+
+})
+
 module.exports = router;

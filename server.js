@@ -57,7 +57,7 @@ var config = {
         "encrypt": false, // Disable encryption
         "trustServerCertificate": false
     },
-    "connectionTimeout": 200
+    "connectionTimeout": 20000
 }
 
 sql.connect(config, async err => {
