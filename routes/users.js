@@ -25,7 +25,8 @@ router.get("/", (req, res) => {
 const searchSchema = {
     username: ["string", false],
     email: ["string", false],
-    user_id: ["number", false]
+    user_id: ["number", false],
+    observatory_id: ["number", false]
 }
 
 router.post("/search", (req, res) => {
@@ -46,12 +47,8 @@ router.post("/search", (req, res) => {
         return false;
     }
 
-    let query;
-    if (keys[0] == 'id'){
-        query = `SELECT * FROM users WHERE user_id = ${search_params[keys[0]]}`;
-    } else {
-        query = `SELECT * FROM users WHERE ${keys[0]} = '${search_params[keys[0]]}'`;
-    }
+    let query;    
+    query = `SELECT * FROM users WHERE ${keys[0]} = '${search_params[keys[0]]}'`;
     
     sql.connect(config, async err => {
         if (err) {
