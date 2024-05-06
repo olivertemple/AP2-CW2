@@ -47,6 +47,7 @@ const observatoryRoutes = require("./routes/observatory");
 const samplesRoutes = require("./routes/samples");
 const usersRoutes = require("./routes/users");
 const exampleRoutes = require("./routes/example_endpoints");
+const transactionRoutes = require("./routes/transactions");
 
 var config = {
     "user": process.env.USER, // Database username
@@ -107,6 +108,7 @@ sql.connect(config, async err => {
         app.use("/api/samples", samplesRoutes);
         app.use("/api/users", usersRoutes);
         app.use("/api/examples", exampleRoutes);
+        app.use("/api/transactions", transactionRoutes);
         app.listen(port, (err) => {
             err ? logger.error(`STARTUP startup error - ${err}`) : logger.info(`STARTUP Listening on port ${port}`)
         });

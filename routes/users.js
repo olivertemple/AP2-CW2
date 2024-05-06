@@ -53,6 +53,7 @@ router.post("/search", (req, res) => {
     sql.connect(config, async err => {
         if (err) {
             res.status(500).send(err);
+            return false;
         } else {
             sql.query(query).then(sql_res => {
                 res.json(sql_res.recordset);
