@@ -76,6 +76,10 @@ router.post("/create", (req, res) => {
 
 })
 
+
+
+
+
 // const searchSchema = {
 //     EarthquakeId: ["number", false],
 //     CollectionDate: ['string', false],
@@ -103,13 +107,13 @@ router.post("/create", (req, res) => {
 //         res.status(400).send("Missing search parameters");
 //         return false;
 //     }
+//     else if (keys.length) {
+
+//     }
 
 //     let query;
-//     if (keys[0] == 'id'){
-//         query = `SELECT * FROM SampleData WHERE user_id = ${search_params[keys[0]]}`;
-//     } else {
-//         query = `SELECT * FROM SampleData WHERE ${keys[0]} = '${search_params[keys[0]]}'`;
-//     }
+//     query = `SELECT * FROM SampleData WHERE ${keys[0]} = '${search_params[keys[0]]}'`;
+    
     
 //     sql.connect(config, async err => {
 //         if (err) {
@@ -125,6 +129,8 @@ router.post("/create", (req, res) => {
 //         }
 //     })
 // })
+
+
 
 deleteSchema = {
     SampleId: ["number", true]
@@ -148,28 +154,13 @@ router.post("/delete", (req, res) => {
     let query;
     query = `DELETE FROM SampleData WHERE SampleId = '${delete_params[keys[0]]}'`
 
-    // sql.connect(config, async err => {
-    //     if (err) {
-    //         res.status(500).send(err);
-    //     } else {
-    //         sql.query(query).then(sql_res => {
-    //             res.json(sql_res.recordset);
-    //             res.status(200).send("Specimen deleted");
-    //             return true;
-    //         }).catch(err => {
-    //             res.status(500).send(err);
-    //             return false;
-    //         })
-    //     }
-    // })
-
     sql.connect(config, async err => {
         if (err) {
             res.status(500).send(err);
         } else {
             try{
 
-                sql.query(`DELETE FROM SampleData WHERE SampleId = '${delete_params[keys[0]]}'`
+                sql.query(query
                 ).then(_ => {
                     res.status(200).send("Specimen deleted");
                     return true;
@@ -201,6 +192,53 @@ router.get("/to_sell", (req, res) => {
             })
         }
     })
+})
+
+
+priceSchema = {
+    ItemValue: ["number", true],
+    SampleId: ["number", true]
+}
+
+router.post("/add_to_shop", (req, res) =>{
+    let price_params = req.body;
+
+    let errors = check_body_schema(price_params, priceSchema);
+    if (errors.length > 0) {
+        res.status(400).json({message: "Invalid request body", errors: errors});
+        return false;
+    }
+
+    let keys = Object.keys(price_params);
+    if (keys.length == 0) {
+        res.status(400).send("Missing search parameters");
+        return false;
+    }
+
+    let query;
+    query = `UPDATE SampleData SET IsSampleRequired = 0, ItemValue = '${req.body.ItemValue}' WHERE SampleId = '${req.body.SampleId}'`
+
+    sql.connect(config, async err => {
+        if (err) {
+            res.status(500).send(err);
+        } else {
+            try{
+
+                sql.query(query
+                ).then(_ => {
+                    res.status(200).send("Item can be sold");
+                    return true;
+                }).catch(err => {
+                    res.status(500).send(`could not alter item status, ${err}`);
+                    return false;
+                })
+            } catch (err) {
+                res.status(500).send(err);
+            }
+            
+        }
+    })
+
 })
 
 
