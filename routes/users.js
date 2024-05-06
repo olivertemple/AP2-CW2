@@ -47,8 +47,8 @@ router.post("/search", (req, res) => {
         return false;
     }
 
-    let query;    
-    query = `SELECT * FROM users WHERE ${keys[0]} = '${search_params[keys[0]]}'`;
+    
+    let query = `SELECT * FROM users WHERE ${keys[0]} = '${search_params[keys[0]]}'`;
     
     sql.connect(config, async err => {
         if (err) {
