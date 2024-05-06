@@ -75,7 +75,8 @@ const createBodySchema = {
     address: ['string', true],
     date_of_birth: ["string", true],
     user_type: ["string", true],
-    email: ["string", true]
+    email: ["string", true],
+    observatory_id: ["number", false]
 }
 
 router.post("/create", (req, res) => {
@@ -110,6 +111,14 @@ router.post("/create", (req, res) => {
                     res.status(400).send("This email is already being used for another account");
                     return false;
                 }
+
+                if (req.body.observatory_id) {
+                    let observatory_check = await sql.query(`SELECT COUNT(ObservatoryId) from ObservatoryData WHERE ObservatoryId = ${req.body.observatory_id}`);
+                    if (observatory_check.recordset[0][''] == 0){
+                        res.status(400).send(`Observatory with id ${req.body.observatory_id} does not exist`)
+                        return false;
+                    }
+                }
                 
                 let salt = bcrypt.genSaltSync(10);
                 let access_token = bcrypt.hashSync(req.body.username, salt).substring(0, 30);
@@ -123,14 +132,16 @@ router.post("/create", (req, res) => {
                     '${req.body.date_of_birth}',
                     '${req.body.user_type}',
                     '${req.body.email}',
-                    '${access_token}'
+                    '${access_token}',
+                    ${req.body.observatory_id || null}
                 )`).then(_ => {
                     res.status(200).json({
                         username: req.body.username,
                         first_name: req.body.first_name,
                         last_name: req.body.last_name,
                         user_type: req.body.user_type,
-                        access_token: access_token});
+                        access_token: access_token,
+                        observatory_id: req.body.observatory_id || null});
                     return true;
                 }).catch(err => {
                     res.status(500).send(`could not add user, ${err}`);
@@ -204,7 +215,8 @@ router.post("/login", (req, res) => {
                     first_name: sql_res.recordset[0].first_name,
                     last_name: sql_res.recordset[0].last_name,
                     user_type: sql_res.recordset[0].user_type,
-                    access_token: sql_res.recordset[0].access_token
+                    access_token: sql_res.recordset[0].access_token,
+                    observatory_id: sql_res.recordset[0].observatory_id
                 });
                 return true;
             }
