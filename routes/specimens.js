@@ -130,7 +130,7 @@ deleteSchema = {
     SampleId: ["number", true]
 }
 
-router.get("/delete", (req, res) => {
+router.post("/delete", (req, res) => {
     let delete_params = req.body;
 
     let errors = check_body_schema(delete_params, deleteSchema);
@@ -185,5 +185,23 @@ router.get("/delete", (req, res) => {
     })
 
 })
+
+router.get("/to_sell", (req, res) => {
+    
+    sql.connect(config, async err => {
+        if (err) {
+            res.status(500).send(err);
+        } else {
+            sql.query("SELECT * FROM SampleData WHERE IsSampleRequired = 0").then(sql_res => {
+                res.json(sql_res.recordset);
+                return true;
+            }).catch(err => {
+                res.status(500).send(err);
+                return false;
+            })
+        }
+    })
+})
+
 
 module.exports = router;
