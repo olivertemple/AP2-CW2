@@ -35,6 +35,7 @@ const createBodySchema = {
 const IsSampleRequired = true
 const ItemValue = 0
 const IsSold = false
+const shop_description = ''
 
 router.post("/create", (req, res) => {
     let errors = check_body_schema(req.body, createBodySchema);
@@ -59,7 +60,8 @@ router.post("/create", (req, res) => {
                     '${IsSampleRequired}',
                     '${ItemValue}',
                     '${IsSold}',
-                    '${req.body.Observations}'
+                    '${req.body.Observations}',
+                    '${shop_description}'
                 )`).then(_ => {
                     res.status(200).send("Specimen added");
                     return true;
@@ -80,55 +82,66 @@ router.post("/create", (req, res) => {
 
 
 
-// const searchSchema = {
-//     EarthquakeId: ["number", false],
-//     CollectionDate: ['string', false],
-//     SampleType: ["string", false],
-//     Longitude: ['number', false],
-//     Latitude: ['number', false],
-//     Country: ["string", false],
-//     CurrentLocation: ["string", false],
-//     IsSampleRequired: ["boolean", false],
-//     ItemValue: ["number", false],
-//     IsSold: ["boolean", false]
-// }
+const searchSchema = {
+    SampleId: ["number", false],
+    EarthquakeId: ["number", false],
+    CollectionDate: ['string', false],
+    SampleType: ["string", false],
+    Longitude: ['number', false],
+    Latitude: ['number', false],
+    Country: ["string", false],
+    CurrentLocation: ["string", false],
+    IsSampleRequired: ["boolean", false],
+    ItemValue: ["number", false],
+    IsSold: ["boolean", false]
+}
 
-// router.get("/search", (req, res) => {
-//     let search_params = req.body;
+router.get("/search", (req, res) => {
+    let search_params = req.body;
 
-//     let errors = check_body_schema(search_params, searchSchema);
-//     if (errors.length > 0) {
-//         res.status(400).json({message: "Invalid request body", errors: errors});
-//         return false;
-//     }
+    let errors = check_body_schema(search_params, searchSchema);
+    if (errors.length > 0) {
+        res.status(400).json({message: "Invalid request body", errors: errors});
+        return false;
+    }
 
-//     let keys = Object.keys(search_params);
-//     if (keys.length == 0) {
-//         res.status(400).send("Missing search parameters");
-//         return false;
-//     }
-//     else if (keys.length) {
+    let keys = Object.keys(search_params);
+    if (keys.length == 0) {
+        res.status(400).send("Missing search parameters");
+        return false;
+    }
 
-//     }
 
-//     let query;
-//     query = `SELECT * FROM SampleData WHERE ${keys[0]} = '${search_params[keys[0]]}'`;
+    let query;
+    query = `SELECT * FROM SampleData WHERE `;
+
+    let conditions
+    conditions = [];
     
+    for (let key in search_params){
+        conditions.push(`${key} = '${search_params[key]}'`)
+    }
+
+    conditions = conditions.join(" AND ")
+
+    query = query + conditions
     
-//     sql.connect(config, async err => {
-//         if (err) {
-//             res.status(500).send(err);
-//         } else {
-//             sql.query(query).then(sql_res => {
-//                 res.json(sql_res.recordset);
-//                 return true;
-//             }).catch(err => {
-//                 res.status(500).send(err);
-//                 return false;
-//             })
-//         }
-//     })
-// })
+    console.log(query)
+    
+    sql.connect(config, async err => {
+        if (err) {
+            res.status(500).send(err);
+        } else {
+            sql.query(query).then(sql_res => {
+                res.json(sql_res.recordset);
+                return true;
+            }).catch(err => {
+                res.status(500).send(err);
+                return false;
+            })
+        }
+    })
+})
 
 
 
@@ -197,7 +210,8 @@ router.get("/to_sell", (req, res) => {
 
 priceSchema = {
     ItemValue: ["number", true],
-    SampleId: ["number", true]
+    SampleId: ["number", true],
+    shop_description: ["string", true]
 }
 
 router.post("/add_to_shop", (req, res) =>{
@@ -216,7 +230,7 @@ router.post("/add_to_shop", (req, res) =>{
     }
 
     let query;
-    query = `UPDATE SampleData SET IsSampleRequired = 0, ItemValue = '${req.body.ItemValue}' WHERE SampleId = '${req.body.SampleId}'`
+    query = `UPDATE SampleData SET IsSampleRequired = 0, ItemValue = '${req.body.ItemValue}', shop_description = '${req.body.shop_description}' WHERE SampleId = '${req.body.SampleId}'`
 
     sql.connect(config, async err => {
         if (err) {
