@@ -58,10 +58,10 @@ router.post("/add_transaction", (req, res) => {
                     let email_req = await sql.query(`SELECT email, username FROM users WHERE user_id = ${req.body.buyer_id}`);
                     let email = email_req.recordset[0].email;
                     let username = email_req.recordset[0].username;
-    
+
                     let sample_req = await sql.query(`SELECT * FROM SampleData WHERE SampleId = ${req.body.sample_id}`)
                     let sample = sample_req.recordset[0];
-    
+
                     let earthquake_req = await sql.query(`SELECT * FROM EarthquakeData WHERE Id = ${sample.EarthquakeId}`)
                     let earthquake = earthquake_req.recordset[0];
 
@@ -87,7 +87,6 @@ router.post("/add_transaction", (req, res) => {
                     res.status(500).send(err);
                     return false;
                 }
-                
             }).catch(err => {
                 res.status(500).send(err);
                 return false;
