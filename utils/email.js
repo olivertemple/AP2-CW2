@@ -1,5 +1,6 @@
 async function sendMailOrderConfirmation(email, user_name, order_number, order_items, template, order_date) {
     try{
+        console.log(order_items)
         let res = await fetch("https://lmuoyu2qlf.execute-api.eu-central-1.amazonaws.com/default/ap2_cw2_emailsend", {
             method: "POST",
             body: JSON.stringify({

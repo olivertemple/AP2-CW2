@@ -14,15 +14,15 @@ var config = {
 }
 
 let earthquakeTable = "CREATE TABLE EarthquakeData ( \
-    Id INT IDENTITY PRIMARY KEY NOT NULL, \
-    EventDate DATETIME NOT NULL, \
-    Magnitude FLOAT NOT NULL, \
-    Country VARCHAR(100) NOT NULL, \
-    Longitude FLOAT NOT NULL, \
-    Latitude FLOAT NOT NULL, \
-    ObservatoryId INT FOREIGN KEY REFERENCES ObservatoryData(ObservatoryId) NOT NULL, \
-    EarthquakeType VARCHAR(50) CHECK (EarthquakeType IN ('tectonic', 'collapse', 'explosion')) NOT NULL, \
-    SeismicWaveType VARCHAR(50) CHECK (SeismicWaveType IN ('p', 's', 'love', 'rayleigh')) NOT NULL \
+    id INT IDENTITY PRIMARY KEY NOT NULL, \
+    event_date DATETIME NOT NULL, \
+    magnitude FLOAT NOT NULL, \
+    country VARCHAR(100) NOT NULL, \
+    longitude FLOAT NOT NULL, \
+    latitude FLOAT NOT NULL, \
+    observatory_id INT FOREIGN KEY REFERENCES ObservatoryData(observatory_id) NOT NULL, \
+    earthquake_type VARCHAR(50) CHECK (earthquake_type IN ('tectonic', 'collapse', 'explosion')) NOT NULL, \
+    seismic_wave_type VARCHAR(50) CHECK (seismic_wave_type IN ('p', 's', 'love', 'rayleigh')) NOT NULL \
 );"
 
 let usersTable = "CREATE TABLE users ( \
@@ -35,41 +35,41 @@ let usersTable = "CREATE TABLE users ( \
     date_of_birth DATE NOT NULL, \
     user_type VARCHAR(20) CHECK (user_type IN ('general', 'junior scientist', 'senior scientist', 'admin')) NOT NULL, \
     email VARCHAR(50) NOT NULL, \
-    access_token VARCHAR(50) NOT NULL\
-    observatory_id INT FOREIGN KEY REFERENCES ObservatoryData(ObservatoryId) \
+    access_token VARCHAR(50) NOT NULL,\
+    observatory_id INT FOREIGN KEY REFERENCES ObservatoryData(observatory_id) \
 );"
 
 let observatoryTable = "CREATE TABLE ObservatoryData ( \
-    ObservatoryId INT IDENTITY PRIMARY KEY NOT NULL, \
-    ObservatoryName VARCHAR(100) NOT NULL, \
-    Country VARCHAR(100) NOT NULL, \
-    Latitude FLOAT NOT NULL, \
-    Longitude FLOAT NOT NULL, \
-    EstablishedDate DATE NOT NULL \
+    observatory_id INT IDENTITY PRIMARY KEY NOT NULL, \
+    observatory_name VARCHAR(100) NOT NULL, \
+    country VARCHAR(100) NOT NULL, \
+    latitude FLOAT NOT NULL, \
+    longitude FLOAT NOT NULL, \
+    established_date DATE NOT NULL \
 );"
 
 let sampleTable = "CREATE TABLE SampleData ( \
-    SampleId INT IDENTITY PRIMARY KEY NOT NULL, \
-    EarthquakeId INT FOREIGN KEY REFERENCES EarthquakeData(Id) NOT NULL, \
-    CollectionDate DATE NOT NULL, \
-    SampleType VARCHAR(50) NOT NULL, \
-    Longitude FLOAT NOT NULL, \
-    Latitude FLOAT NOT NULL, \
-    Country VARCHAR(100) NOT NULL, \
-    CurrentLocation VARCHAR(100) NOT NULL, \
-    IsSampleRequired BIT NOT NULL, \
-    ItemValue NUMERIC(10, 2) NOT NULL, \
-    IsSold BIT NOT NULL, \
-    Observations TEXT NOT NULL \
+    sample_id INT IDENTITY PRIMARY KEY NOT NULL, \
+    earthquake_id INT FOREIGN KEY REFERENCES EarthquakeData(id) NOT NULL, \
+    collection_date DATE NOT NULL, \
+    sample_type VARCHAR(50) NOT NULL, \
+    longitude FLOAT NOT NULL, \
+    latitude FLOAT NOT NULL, \
+    country VARCHAR(100) NOT NULL, \
+    current_location VARCHAR(100) NOT NULL, \
+    is_sample_required BIT NOT NULL, \
+    item_value NUMERIC(10, 2) NOT NULL, \
+    is_sold BIT NOT NULL, \
+    observations TEXT NOT NULL \
 );"
 
 let transactionTable = "CREATE TABLE Transactions ( \
-    TransactionId INT IDENTITY PRIMARY KEY NOT NULL, \
-    BuyerId INT FOREIGN KEY REFERENCES users(user_id) NOT NULL, \
-    Value FLOAT NOT NULL, \
+    transaction_id INT IDENTITY PRIMARY KEY NOT NULL, \
+    buyer_id INT FOREIGN KEY REFERENCES users(user_id) NOT NULL, \
+    value FLOAT NOT NULL, \
     date_of_purchase DATETIME NOT NULL, \
     collection_status VARCHAR(10) NOT NULL, \
-    SampleId INT FOREIGN KEY REFERENCES sampleData(SampleId) NOT NULL \
+    sample_id INT FOREIGN KEY REFERENCES sampleData(sample_id) NOT NULL \
 );"
 
 

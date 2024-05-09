@@ -59,25 +59,25 @@ router.post("/add_transaction", (req, res) => {
                     ${id},
                     '${order_number}'
                 )`)
-                sql.query(`UPDATE SampleData SET IsSold = 1 WHERE SampleId = ${id}`)
+                sql.query(`UPDATE SampleData SET is_sold = 1 WHERE sample_id = ${id}`)
 
 
-                let sample_req = await sql.query(`SELECT * FROM SampleData WHERE SampleId = ${id}`)
+                let sample_req = await sql.query(`SELECT * FROM SampleData WHERE sample_id = ${id}`)
                 let sample = sample_req.recordset[0];
 
-                let earthquake_req = await sql.query(`SELECT * FROM EarthquakeData WHERE Id = ${sample.EarthquakeId}`)
+                let earthquake_req = await sql.query(`SELECT * FROM EarthquakeData WHERE id = ${sample.earthquake_id}`)
                 let earthquake = earthquake_req.recordset[0];
 
                 let item = {
-                    earthquake_id: earthquake.Id,
-                    earthquake_date: earthquake.EventDate,
-                    collection_date: sample.CollectionDate,
-                    sample_type: sample.SampleType,
-                    sample_longitude: sample.Longitude,
-                    sample_latitude: sample.Latitude,
-                    sample_country: sample.Country,
-                    item_value: sample.ItemValue,
-                    observations: sample.Observations,
+                    earthquake_id: earthquake.id,
+                    earthquake_date: earthquake.event_date,
+                    collection_date: sample.collection_date,
+                    sample_type: sample.sample_type,
+                    sample_longitude: sample.longitude,
+                    sample_latitude: sample.latitude,
+                    sample_country: sample.country,
+                    item_value: sample.item_value,
+                    observations: sample.observations,
                     shop_description: sample.shop_description,
                     image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTe3hKH5U9hzPmkWe9XwVn1Kx0UGI4a54UFk7GYM3x4w&s"
                 };
@@ -138,22 +138,22 @@ router.get("/transaction_collected", (req, res) => {
             for (let i in orders){
                 let order = orders[i];
 
-                let sample_req = await sql.query(`SELECT * FROM SampleData WHERE SampleId = ${order.SampleId}`)
+                let sample_req = await sql.query(`SELECT * FROM SampleData WHERE sample_id = ${order.sample_id}`)
                 let sample = sample_req.recordset[0];
 
-                let earthquake_req = await sql.query(`SELECT * FROM EarthquakeData WHERE Id = ${sample.EarthquakeId}`)
+                let earthquake_req = await sql.query(`SELECT * FROM EarthquakeData WHERE id = ${sample.earthquake_id}`)
                 let earthquake = earthquake_req.recordset[0];
                 
                 let item = {
-                    earthquake_id: earthquake.Id,
-                    earthquake_date: earthquake.EventDate,
-                    collection_date: sample.CollectionDate,
-                    sample_type: sample.SampleType,
-                    sample_longitude: sample.Longitude,
-                    sample_latitude: sample.Latitude,
-                    sample_country: sample.Country,
-                    item_value: sample.ItemValue,
-                    observations: sample.Observations,
+                    earthquake_id: earthquake.id,
+                    earthquake_date: earthquake.event_date,
+                    collection_date: sample.collection_date,
+                    sample_type: sample.sample_type,
+                    sample_longitude: sample.longitude,
+                    sample_latitude: sample.latitude,
+                    sample_country: sample.country,
+                    item_value: sample.item_value,
+                    observations: sample.observations,
                     shop_description: sample.shop_description,
                     image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTe3hKH5U9hzPmkWe9XwVn1Kx0UGI4a54UFk7GYM3x4w&s"
                 };
@@ -161,7 +161,7 @@ router.get("/transaction_collected", (req, res) => {
                 order_items.push(item);
             }
 
-            let email_req = await sql.query(`SELECT email, username FROM users WHERE user_id = ${orders[0].BuyerId}`);
+            let email_req = await sql.query(`SELECT email, username FROM users WHERE user_id = ${orders[0].buyer_id}`);
             let email = email_req.recordset[0].email;
             let username = email_req.recordset[0].username;
 
