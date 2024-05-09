@@ -79,7 +79,23 @@ router.post("/create", (req, res) => {
 })
 
 
+router.get("/get_all_specimens", (req, res) => {
 
+    
+    sql.connect(config, async err => {
+        if (err) {
+            res.status(500).send(err);
+        } else {
+            sql.query("SELECT * FROM SampleData").then(sql_res => {
+                res.json(sql_res.recordset);
+                return true;
+            }).catch(err => {
+                res.status(500).send(err);
+                return false;
+            })
+        }
+    })
+})
 
 
 const searchSchema = {
