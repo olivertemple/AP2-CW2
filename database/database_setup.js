@@ -36,6 +36,7 @@ let usersTable = "CREATE TABLE users ( \
     user_type VARCHAR(20) CHECK (user_type IN ('general', 'junior scientist', 'senior scientist', 'admin')) NOT NULL, \
     email VARCHAR(50) NOT NULL, \
     access_token VARCHAR(50) NOT NULL\
+    observatory_id INT FOREIGN KEY REFERENCES ObservatoryData(ObservatoryId) \
 );"
 
 let observatoryTable = "CREATE TABLE ObservatoryData ( \

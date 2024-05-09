@@ -25,10 +25,11 @@ router.get("/", (req, res) => {
 const searchSchema = {
     username: ["string", false],
     email: ["string", false],
-    user_id: ["number", false]
+    user_id: ["number", false],
+    observatory_id: ["number", false]
 }
 
-router.get("/search", (req, res) => {
+router.post("/search", (req, res) => {
     let search_params = req.body;
 
     let errors = check_body_schema(search_params, searchSchema);
@@ -46,16 +47,13 @@ router.get("/search", (req, res) => {
         return false;
     }
 
-    let query;
-    if (keys[0] == 'id'){
-        query = `SELECT * FROM users WHERE user_id = ${search_params[keys[0]]}`;
-    } else {
-        query = `SELECT * FROM users WHERE ${keys[0]} = '${search_params[keys[0]]}'`;
-    }
+    
+    let query = `SELECT * FROM users WHERE ${keys[0]} = '${search_params[keys[0]]}'`;
     
     sql.connect(config, async err => {
         if (err) {
             res.status(500).send(err);
+            return false;
         } else {
             sql.query(query).then(sql_res => {
                 res.json(sql_res.recordset);
@@ -75,7 +73,8 @@ const createBodySchema = {
     address: ['string', true],
     date_of_birth: ["string", true],
     user_type: ["string", true],
-    email: ["string", true]
+    email: ["string", true],
+    observatory_id: ["number", false]
 }
 
 router.post("/create", (req, res) => {
@@ -88,6 +87,7 @@ router.post("/create", (req, res) => {
     sql.connect(config, async err => {
         if (err) {
             res.status(500).send(err);
+            return false;
         } else {
             try{
                 var username_check = await sql.query(`SELECT COUNT(username) FROM users WHERE username ='${req.body.username}'`)
@@ -102,15 +102,23 @@ router.post("/create", (req, res) => {
                     res.status(400).send("Username already exists");
                     return false;
                 }
-              
+
                 if (email_instances > 0) {
                     res.status(400).send("This email is already being used for another account");
                     return false;
                 }
+
+                if (req.body.observatory_id) {
+                    let observatory_check = await sql.query(`SELECT COUNT(ObservatoryId) from ObservatoryData WHERE ObservatoryId = ${req.body.observatory_id}`);
+                    if (observatory_check.recordset[0][''] == 0){
+                        res.status(400).send(`Observatory with id ${req.body.observatory_id} does not exist`)
+                        return false;
+                    }
+                }
                 
                 let salt = bcrypt.genSaltSync(10);
                 let access_token = bcrypt.hashSync(req.body.username, salt).substring(0, 30);
-              
+
                 sql.query(`INSERT INTO users VALUES (
                     '${req.body.username}',
                     '${req.body.password}',
@@ -120,9 +128,16 @@ router.post("/create", (req, res) => {
                     '${req.body.date_of_birth}',
                     '${req.body.user_type}',
                     '${req.body.email}',
-                    '${access_token}'
+                    '${access_token}',
+                    ${req.body.observatory_id || null}
                 )`).then(_ => {
-                    res.status(200).json({access_token: access_token});
+                    res.status(200).json({
+                        username: req.body.username,
+                        first_name: req.body.first_name,
+                        last_name: req.body.last_name,
+                        user_type: req.body.user_type,
+                        access_token: access_token,
+                        observatory_id: req.body.observatory_id || null});
                     return true;
                 }).catch(err => {
                     res.status(500).send(`could not add user, ${err}`);
@@ -170,5 +185,47 @@ router.get("/delete", (req, res) => {
         }
     })
 })
+
+const loginBodySchema = {
+    username: ['string', true],
+    password: ['string', true]
+}
+
+router.post("/login", (req, res) => {
+    let errors = check_body_schema(req.body, loginBodySchema);
+    if (errors.length > 0){
+        res.status(400).json({message: "Invalid request body", errors: errors});
+        return false;
+    }
+
+    sql.connect(config, async err => {
+        if (err) {
+            res.status(500).send(err);
+            return false;
+        }
+
+        sql.query(`SELECT * FROM users WHERE username='${req.body.username}' AND password='${req.body.password}'`).then(sql_res => {
+            if (sql_res.recordset.length > 0){
+                res.status(200).json({
+                    username: sql_res.recordset[0].username,
+                    first_name: sql_res.recordset[0].first_name,
+                    last_name: sql_res.recordset[0].last_name,
+                    user_type: sql_res.recordset[0].user_type,
+                    access_token: sql_res.recordset[0].access_token,
+                    observatory_id: sql_res.recordset[0].observatory_id
+                });
+                return true;
+            }
+
+            res.status(401).send("invalid credentials")
+            return false;
+        }).catch(err => {
+            res.status(500).send(err);
+            return false;
+        })
+        
+    })
+})
+
 
 module.exports = router;
