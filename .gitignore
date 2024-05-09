@@ -3,3 +3,4 @@ node_modules
 database_delete.js
 frontend_build
 logs
+email_service

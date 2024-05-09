@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style type="text/css">
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        * {
+        font-family: "Inter", sans-serif;
+        font-optical-sizing: auto;
+        font-style: normal;
+        font-variation-settings:
+            "slnt" 0;
+        }
+        div.center-item {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+        }
+        body {
+            margin: 0;
+        }
+        div.container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            background-color: #242424;
+        }
+        body {
+            background-color: #242424;
+        }
+        img {
+            width: 80px;
+            height: 80px;
+        }
+
+        div.img-header {
+            background-color: black;
+            width: 100%;
+            padding: 40px 0px;
+            display: flex;
+            justify-content: center;
+        }
+
+        div.header{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: calc(100% - 40px);
+            padding: 80px 20px;
+            background-color: #ffcc99;
+            text-align: center;
+            gap: 15px;
+        }
+
+        div.item-details {
+            display: flex;
+            flex-direction: column;
+            align-items: left;
+            gap: 5px;
+        }
+        p, h1, h2, h3{
+            margin: 0;
+        }
+
+        div.order-item {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-evenly;
+        }
+
+        div.items{
+            width: 100%;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+            padding-top: 40px;
+        }
+
+        div.total-container{
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        div.money {
+            width: 50%;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        p.total {
+            font-weight: bold;
+        }
+
+        div.order-details {
+            background-color: #eeeeee;
+            padding: 40px 0px;
+        }
+
+        div.contact {
+            background-color: black;
+            padding: 40px 0px;
+            gap:5px;
+        }
+
+        p.name {
+            color: grey;
+            font-weight: bold;
+        }
+
+        a.email {
+            color: darkgray;
+            text-decoration: none;
+        }
+        span.bold {
+            font-weight: bold;
+        }
+
+        @media only screen and (max-width: 600px) {
+            div.width-control {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="width-control" style=" background-color: white; display: flex; flex-direction: column; align-items: center;">
+            <div class="img-header">
+                <img src="https://ci3.googleusercontent.com/meips/ADKq_NZvexKEmLCyrL3wlLQoNFAzLP9sPvmH1RDlEIT4C0R_SSEZuCmhwpIkhfZ1x5iU7JlFvZxVvlyhOh7UtTaJ5DBhXNCUvb_QIT967PLKgdYGxWYbY9mJCJPniS5pInVtWKenjH-7S-viu8Lg61yT7sZmHHw2CdDSPLlUfQ=s0-d-e1-ft#https://fhomcbi.stripocdn.email/content/guids/bad1b888-ca9a-475f-8c5e-5b56618bf690/images/favicon.png" alt="">
+            </div>
+            <div class="header center-item">
+                <h1>Your Order is Confirmed!</h1>
+                <p>Hi USERNAME, we've received  your order number ORDER NUMBER and it's awaiting collection.</p>
+            </div>
+
+            <div class="items center-item">
+                <h2>Items Ordered</h2>
+                <!-- generate items -->
+                <div class="order-item">
+                    <img src="" alt="">
+                    <div class="item-details">
+                        <h3>SHOP DESCRIPTION</h3>
+                        <p>Scientific Observations: </p>
+                        <p>Sample Collection Date: </p>
+                        <p>Location</p>
+                        <p>SAMPLE TYPE</p>
+                        <br />
+                        <p>Item Price: </p>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <hr style="width: 80%">
+            <br>
+            <div class="total-container center-item">
+                <div class="money">
+                    <p class="total">Subtotal:</p>
+                    <p>money</p>
+                </div>
+                <div class="money">
+                    <p class="total">Total:</p>
+                    <p>money</p>
+                </div>
+            </div>
+            <br><br>
+            <div class="order-details center-item">
+                <h2>Order Details</h2>
+                <br>
+                <p><span class="bold">Order Number:</span></p>
+                <p><span class="bold">Collection Status:</span></p>
+                <p><span class="bold">Order Date:</span></p>
+            </div>
+            <br><br>
+            <div class="center-item help">
+                <h2>We're here to help</h2>
+                <p style="margin: 0px 20px;">Email us at <a href="mailto:sieswatchearthquakes@gmail.com">sieswatchearthquakes@gmail.com</a> for expert assistance.</p>
+            </div>
+            
+            <br><br>
+
+            <div class="center-item contact">
+                <p class="name">SiesWatch Earthquakes</p>
+                <a class="email" href="mailto:sieswatchearthquakes@gmail.com">sieswatchearthquakes@gmail.com</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
