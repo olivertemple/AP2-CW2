@@ -40,7 +40,7 @@ router.post("/create", (req, res) => {
 
     sql.connect(config, async err => {
         if (err) {
-            res.status(500).send(err);
+            res.status(500).json({message: "Could not connect to server", errors: err});
             return false;
         } else {
             let observatory_exists = await sql.query(`SELECT COUNT(*) as 'count' FROM ObservatoryData WHERE observatory_id = ${req.body.observatory_id}`)
@@ -59,10 +59,11 @@ router.post("/create", (req, res) => {
                 '${req.body.earthquake_type}',
                 '${req.body.seismic_wave_type}'
             )`).then(_ => {
-                res.status(200).send();
+                res.status(200).json({message: "Earthquake added"});
+
                 return true;
             }).catch(err => {
-                res.status(500).send(err);
+                res.status(500).json({message: "Could not add earthquake", errors: err});
                 return false;
             })
         }
@@ -101,7 +102,7 @@ router.post("/search", (req, res) => {
 
     if (keys.includes("start_date") && keys.includes("end_date")) {
         if (new Date(search_params['start_date']) > new Date(search_params['end_date'])) {
-            res.status(400).send("start date is after end date");
+            res.status(400).json({message: "Start date is after end date"});
             return false;
         }
     }
@@ -118,7 +119,7 @@ router.post("/search", (req, res) => {
 
     if (keys.includes("magnitude_max") && keys.includes("magnitude_min")) {
         if (search_params.magnitude_max < search_params.magnitude_min){
-            res.status(400).send("maximum magnitude is less than minimum magnitude");
+            res.status(400).json({message: "Maximum magnitude is less than minimum magnitude"});
             return false;
         }
     }
@@ -144,21 +145,22 @@ router.post("/search", (req, res) => {
     }
 
     if (sql_query.length == 0) {
-        res.status(400).send("no search parameters");
+        res.status(400).json({message: "No search parameters"});
+
         return false;
     }
 
     let query = "SELECT * FROM EarthquakeData WHERE " + sql_query.join(` ${search_params['operator']} `);
     sql.connect(config, async err => {
         if (err) {
-            res.status(500).send(err);
+            res.status(500).json({message: "Could not connect to server", errors: err});
             return false;
         } else {
             sql.query(query).then(sql_res => {
                 res.json(sql_res.recordset);
                 return true;
             }).catch(err => {
-                res.status(500).send(err);
+                res.status(500).json({message: "Could not complete search", errors: err});
                 return false;
             })
         }
@@ -182,7 +184,7 @@ router.post("/search_radius", (req, res) => {
 
     sql.connect(config, async err => {
         if (err) {
-            res.status(500).send(err);
+            res.status(500).json({message: "Could not connect to server", errors: err});
             return false;
         } else {
             sql.query(`SELECT * FROM EarthquakeData WHERE (
@@ -201,7 +203,7 @@ router.post("/search_radius", (req, res) => {
                 res.json(resp);
                 return true;
             }).catch(err => {
-                res.status(500).send(err);
+                res.status(500).json({message: "Could not complete search", errors: err});
                 return false;
             })
         }
@@ -228,7 +230,7 @@ router.post("/count_type", (req, res) => {
 
     if (search_params.start_date && search_params.end_date){
         if (new Date(search_params['start_date']) > new Date(search_params['end_date'])) {
-            res.status(400).send("start date is after end date");
+            res.status(400).json({message: "Start date is after end date"});
             return false;
         }
     }
@@ -245,7 +247,7 @@ router.post("/count_type", (req, res) => {
 
     sql.connect(config, async err => {
         if (err){
-            res.status(500).send(err);
+            res.status(500).json({message: "Could not connect to server", errors: err});
             return false;
         } else {
             sql.query(`SELECT earthquake_type, COUNT(id) as 'count' FROM EarthquakeData WHERE \
@@ -254,7 +256,7 @@ router.post("/count_type", (req, res) => {
                 ).then(sql_res => {
                     res.json(sql_res.recordset);
                 }).catch(err => {
-                    res.status(500).send(err);
+                    res.status(500).json({message: "Could not get earthquakes", errors: err});
                     return false;
             })
         }
@@ -281,7 +283,7 @@ router.post("/count_wave", (req, res) => {
 
     if (search_params.start_date && search_params.end_date){
         if (new Date(search_params['start_date']) > new Date(search_params['end_date'])) {
-            res.status(400).send("start date is after end date");
+            res.status(400).json({message: "Start date is after end date"});
             return false;
         }
     }
@@ -298,7 +300,7 @@ router.post("/count_wave", (req, res) => {
 
     sql.connect(config, async err => {
         if (err){
-            res.status(500).send(err);
+            res.status(500).json({message: "Could not connect to server", errors: err});
             return false;
         } else {
             sql.query(`SELECT seismic_wave_type, COUNT(id) as 'count' FROM EarthquakeData WHERE \
@@ -307,7 +309,7 @@ router.post("/count_wave", (req, res) => {
                 ).then(sql_res => {
                     res.json(sql_res.recordset);
                 }).catch(err => {
-                    res.status(500).send(err);
+                    res.status(500).json({message: "Could not get earthquakes", errors: err});
                     return false;
             })
         }
@@ -317,13 +319,13 @@ router.post("/count_wave", (req, res) => {
 router.get("/all_earthquakes", (req, res) => {
     sql.connect(config, async err => {
         if (err) {
-            res.status(500).send(err);
+            res.status(500).json({message: "Could not connect to server", errors: err});
             return false;
         } else {
             sql.query("SELECT * FROM EarthquakeData").then(sql_res => {
                 res.json(sql_res.recordset);
             }).catch(err => {
-                res.status(500).send(err);
+                res.status(500).json({message: "Could not get earthquakes", errors: err});
             })
         }
     })
@@ -331,12 +333,12 @@ router.get("/all_earthquakes", (req, res) => {
 
 router.get("/observatory", (req, res) => {
     if (!req.query.id) {
-        res.status(400).send("no id sent");
+        res.status(400).json({message: "No ID sent"});
         return false;
     }
 
     if (!parseInt(req.query.id)){
-        res.status(400).send("id was not numeric");
+        res.status(400).json({message: "ID was not numeric"});
         return false;
     }
 
@@ -344,20 +346,21 @@ router.get("/observatory", (req, res) => {
 
     sql.connect(config, async err => {
         if (err) {
-            res.status(500).send(err);
+            res.status(500).json({message: "Could not connect to server", errors: err});
             return false;
         } else {
             try {
                 let sql_res = await sql.query(`SELECT * FROM EarthquakeData WHERE observatory_id = ${observatory_id}`)
 
                 if (sql_res.recordset.length == 0) {
-                    res.status(400).send(`observatory with id of ${observatory_id} not found`);
+                    message_var = `observatory with id of ${observatory_id} not found`
+                    res.status(400).json({message: message_var});
                     return false;
                 }
 
                 res.json(sql_res.recordset);
             } catch (err) {
-                res.status(500).send(err);
+                res.status(500).json({message: "Could not get earthquakes", errors: err});
                 return false;
             }
         }
@@ -367,7 +370,7 @@ router.get("/observatory", (req, res) => {
 router.get("/earthquakes_per_year", (_, res) => {
     sql.connect(config, async err => {
         if (err) {
-            res.status(500).send(err);
+            res.status(500).json({message: "Could not connect to server", errors: err});
             return false;
         } else {
             sql.query("SELECT YEAR(event_date) as 'year' , COUNT(*) as 'count' FROM EarthquakeData GROUP BY YEAR(event_date);").then(sql_res => {
@@ -376,7 +379,7 @@ router.get("/earthquakes_per_year", (_, res) => {
                 res.status(200).json(count);
 
             }).catch(err => {
-                res.status(500).send(err);
+                res.status(500).json({message: "Could not get earthquakes", errors: err});
             })
         }
     });

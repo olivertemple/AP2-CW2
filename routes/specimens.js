@@ -117,7 +117,7 @@ const searchSchema = {
     is_sold: ["boolean", false]
 }
 
-router.post("/search", (req, res) => {
+router.get("/search", (req, res) => {
     let search_params = req.body;
 
     let errors = check_body_schema(search_params, searchSchema);
