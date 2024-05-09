@@ -22,14 +22,14 @@ router.get("/", (req, res) => {
 })
 
 const createBodySchema = {
-    EarthquakeId: ["number", true],
-    CollectionDate: ['string', true],
-    SampleType: ["string", true],
-    Longitude: ['number', true],
-    Latitude: ['number', true],
-    Country: ["string", true],
-    CurrentLocation: ["string", true],
-    Observations: ["string", true]
+    earthquake_id: ["number", true],
+    collection_date: ['string', true],
+    sample_type: ["string", true],
+    longitude: ['number', true],
+    latitude: ['number', true],
+    country: ["string", true],
+    current_location: ["string", true],
+    observations: ["string", true]
 }
 
 const IsSampleRequired = true
@@ -50,17 +50,17 @@ router.post("/create", (req, res) => {
             try{
 
                 sql.query(`INSERT INTO SampleData VALUES (
-                    '${req.body.EarthquakeId}',
-                    '${req.body.CollectionDate}',
-                    '${req.body.SampleType}',
-                    '${req.body.Longitude}',
-                    '${req.body.Latitude}',
-                    '${req.body.Country}',
-                    '${req.body.CurrentLocation}',
+                    '${req.body.earthquake_id}',
+                    '${req.body.collection_date}',
+                    '${req.body.sample_type}',
+                    '${req.body.longitude}',
+                    '${req.body.latitude}',
+                    '${req.body.country}',
+                    '${req.body.current_location}',
                     '${IsSampleRequired}',
                     '${ItemValue}',
                     '${IsSold}',
-                    '${req.body.Observations}',
+                    '${req.body.observations}',
                     '${shop_description}'
                 )`).then(_ => {
                     res.status(200).send("Specimen added");
@@ -99,20 +99,20 @@ router.get("/get_all_specimens", (req, res) => {
 
 
 const searchSchema = {
-    SampleId: ["number", false],
-    EarthquakeId: ["number", false],
-    CollectionDate: ['string', false],
-    SampleType: ["string", false],
-    Longitude: ['number', false],
-    Latitude: ['number', false],
-    Country: ["string", false],
-    CurrentLocation: ["string", false],
-    IsSampleRequired: ["boolean", false],
-    ItemValue: ["number", false],
-    IsSold: ["boolean", false]
+    sample_id: ["number", false],
+    earthquake_id: ["number", false],
+    collection_date: ['string', false],
+    sample_type: ["string", false],
+    longitude: ['number', false],
+    latitude: ['number', false],
+    country: ["string", false],
+    current_location: ["string", false],
+    is_sample_required: ["boolean", false],
+    item_value: ["number", false],
+    is_sold: ["boolean", false]
 }
 
-router.get("/search", (req, res) => {
+router.post("/search", (req, res) => {
     let search_params = req.body;
 
     let errors = check_body_schema(search_params, searchSchema);
@@ -162,7 +162,7 @@ router.get("/search", (req, res) => {
 
 
 deleteSchema = {
-    SampleId: ["number", true]
+    sample_id: ["number", true]
 }
 
 router.post("/delete", (req, res) => {
@@ -181,7 +181,7 @@ router.post("/delete", (req, res) => {
     }
 
     let query;
-    query = `DELETE FROM SampleData WHERE SampleId = '${delete_params[keys[0]]}'`
+    query = `DELETE FROM SampleData WHERE sample_id = '${delete_params[keys[0]]}'`
 
     sql.connect(config, async err => {
         if (err) {
@@ -212,7 +212,7 @@ router.get("/to_sell", (req, res) => {
         if (err) {
             res.status(500).send(err);
         } else {
-            sql.query("SELECT * FROM SampleData WHERE IsSampleRequired = 0").then(sql_res => {
+            sql.query("SELECT * FROM SampleData WHERE is_sample_required = 0").then(sql_res => {
                 res.json(sql_res.recordset);
                 return true;
             }).catch(err => {
@@ -225,8 +225,8 @@ router.get("/to_sell", (req, res) => {
 
 
 priceSchema = {
-    ItemValue: ["number", true],
-    SampleId: ["number", true],
+    item_value: ["number", true],
+    sample_id: ["number", true],
     shop_description: ["string", true]
 }
 
@@ -246,7 +246,7 @@ router.post("/add_to_shop", (req, res) =>{
     }
 
     let query;
-    query = `UPDATE SampleData SET IsSampleRequired = 0, ItemValue = '${req.body.ItemValue}', shop_description = '${req.body.shop_description}' WHERE SampleId = '${req.body.SampleId}'`
+    query = `UPDATE SampleData SET is_sample_required = 0, item_value = '${req.body.item_value}', shop_description = '${req.body.shop_description}' WHERE sample_id = '${req.body.sample_id}'`
 
     sql.connect(config, async err => {
         if (err) {

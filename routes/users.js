@@ -109,7 +109,7 @@ router.post("/create", (req, res) => {
                 }
 
                 if (req.body.observatory_id) {
-                    let observatory_check = await sql.query(`SELECT COUNT(ObservatoryId) from ObservatoryData WHERE ObservatoryId = ${req.body.observatory_id}`);
+                    let observatory_check = await sql.query(`SELECT COUNT(observatory_id) from ObservatoryData WHERE observatory_id = ${req.body.observatory_id}`);
                     if (observatory_check.recordset[0][''] == 0){
                         res.status(400).send(`Observatory with id ${req.body.observatory_id} does not exist`)
                         return false;

@@ -63,7 +63,7 @@ router.get("/largest_magnitude", (req, res) => {
             res.status(500).send(err);
             return false;
         }else{
-            sql.query(`SELECT * from EarthquakeData e WHERE e.magnitude = (SELECT MAX(magnitude) FROM EarthquakeData WHERE ObservatoryId = ${observatory_id}) `).then(sql_res => {
+            sql.query(`SELECT * from EarthquakeData e WHERE e.magnitude = (SELECT MAX(magnitude) FROM EarthquakeData WHERE observatory_id = ${observatory_id}) `).then(sql_res => {
                 res.json(sql_res.recordset);
                 return true;
             }).catch(err => {
@@ -86,7 +86,7 @@ router.get("/average_magnitude", (req, res) => {
             res.status(500).send(err);
             return false;
         }else{
-            sql.query(`SELECT AVG(magnitude) FROM EarthquakeData WHERE ObservatoryId = ${observatory_id}`).then(sql_res => {
+            sql.query(`SELECT AVG(magnitude) FROM EarthquakeData WHERE observatory_id = ${observatory_id}`).then(sql_res => {
                 res.json({"average_magnitude": sql_res.recordset[0]['']});
                 return true;
             }).catch(err => {
@@ -110,14 +110,14 @@ router.get("/average_number", (req, res) => {
             return false;
         } else {
             try {
-                let sql_res_count = await sql.query(`SELECT COUNT(id) FROM EarthquakeData WHERE ObservatoryId = ${observatory_id} GROUP BY YEAR(EventDate)`)
+                let sql_res_count = await sql.query(`SELECT COUNT(id) FROM EarthquakeData WHERE observatory_id = ${observatory_id} GROUP BY YEAR(event_date)`)
 
                 let total = 0;
                 for (let i in sql_res_count.recordset) {
                     total += sql_res_count.recordset[i]['']
                 }
 
-                let sql_res_date = await sql.query(`SELECT EstablishedDate FROM ObservatoryData WHERE ObservatoryId = ${observatory_id}`)
+                let sql_res_date = await sql.query(`SELECT established_date FROM ObservatoryData WHERE observatory_id = ${observatory_id}`)
                 if (sql_res_date.recordset.length == 0) {
                     res.status(400).send(`observatory with id of ${observatory_id} not found`);
                     return false;

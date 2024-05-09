@@ -43,7 +43,7 @@ router.post("/create", (req, res) => {
             res.status(500).send(err);
             return false;
         } else {
-            let observatory_exists = await sql.query(`SELECT COUNT(*) as 'count' FROM ObservatoryData WHERE ObservatoryID = ${req.body.observatory_id}`)
+            let observatory_exists = await sql.query(`SELECT COUNT(*) as 'count' FROM ObservatoryData WHERE observatory_id = ${req.body.observatory_id}`)
             if (!observatory_exists.recordset[0].count){
                 res.status(400).json({message: `Observatory with id ${req.body.observatory_id} does not exist`})
                 return false;
@@ -108,12 +108,12 @@ router.post("/search", (req, res) => {
 
     if (keys.includes("start_date")){
         let start_date = search_params['start_date'];
-        sql_query.push(`(EventDate > '${start_date}')`);
+        sql_query.push(`(event_date > '${start_date}')`);
     }
 
     if (keys.includes("end_date")){
         let end_date = search_params['end_date'];
-        sql_query.push(`(EventDate < '${end_date}')`);
+        sql_query.push(`(event_date < '${end_date}')`);
     }
 
     if (keys.includes("magnitude_max") && keys.includes("magnitude_min")) {
@@ -140,7 +140,7 @@ router.post("/search", (req, res) => {
     }
 
     if (keys.includes("earthquake_type")) {
-        sql_query.push(`(EarthquakeType = '${search_params['earthquake_type']}')`);
+        sql_query.push(`(earthquake_type = '${search_params['earthquake_type']}')`);
     }
 
     if (sql_query.length == 0) {
@@ -194,7 +194,7 @@ router.post("/search_radius", (req, res) => {
                 let resp = [];
                 for (let i in sql_res.recordset) {
                     let item = sql_res.recordset[i];
-                    if (Math.pow(item.Latitude - search_params.latitude, 2) + Math.pow(item.Longitude - search_params.longitude, 2) <= Math.pow(search_params.radius, 2)) {
+                    if (Math.pow(item.latitude - search_params.latitude, 2) + Math.pow(item.longitude - search_params.longitude, 2) <= Math.pow(search_params.radius, 2)) {
                         resp.push(item);
                     }
                 }
@@ -236,11 +236,11 @@ router.post("/count_type", (req, res) => {
     let query = [];
 
     if (search_params.start_date){
-        query.push(`(EventDate > '${search_params.start_date}')`);
+        query.push(`(event_date > '${search_params.start_date}')`);
     }
 
     if (search_params.end_date){
-        query.push(`(EventDate < '${search_params.end_date}')`);
+        query.push(`(event_date < '${search_params.end_date}')`);
     }
 
     sql.connect(config, async err => {
@@ -248,9 +248,9 @@ router.post("/count_type", (req, res) => {
             res.status(500).send(err);
             return false;
         } else {
-            sql.query(`SELECT EarthquakeType, COUNT(id) as 'count' FROM EarthquakeData WHERE \
+            sql.query(`SELECT earthquake_type, COUNT(id) as 'count' FROM EarthquakeData WHERE \
                 ${query.length > 1 ? query.join(" AND ") : query[0]} \
-                    GROUP BY EarthquakeType`
+                    GROUP BY earthquake_type`
                 ).then(sql_res => {
                     res.json(sql_res.recordset);
                 }).catch(err => {
@@ -289,11 +289,11 @@ router.post("/count_wave", (req, res) => {
     let query = [];
 
     if (search_params.start_date){
-        query.push(`(EventDate > '${search_params.start_date}')`);
+        query.push(`(event_date > '${search_params.start_date}')`);
     }
 
     if (search_params.end_date){
-        query.push(`(EventDate < '${search_params.end_date}')`);
+        query.push(`(event_date < '${search_params.end_date}')`);
     }
 
     sql.connect(config, async err => {
@@ -301,9 +301,9 @@ router.post("/count_wave", (req, res) => {
             res.status(500).send(err);
             return false;
         } else {
-            sql.query(`SELECT SeismicWaveType, COUNT(id) as 'count' FROM EarthquakeData WHERE \
+            sql.query(`SELECT seismic_wave_type, COUNT(id) as 'count' FROM EarthquakeData WHERE \
                     ${query.length > 1 ? query.join(" AND ") : query[0]} \
-                    GROUP BY SeismicWaveType`
+                    GROUP BY seismic_wave_type`
                 ).then(sql_res => {
                     res.json(sql_res.recordset);
                 }).catch(err => {
@@ -348,7 +348,7 @@ router.get("/observatory", (req, res) => {
             return false;
         } else {
             try {
-                let sql_res = await sql.query(`SELECT * FROM EarthquakeData WHERE ObservatoryId = ${observatory_id}`)
+                let sql_res = await sql.query(`SELECT * FROM EarthquakeData WHERE observatory_id = ${observatory_id}`)
 
                 if (sql_res.recordset.length == 0) {
                     res.status(400).send(`observatory with id of ${observatory_id} not found`);
@@ -370,7 +370,7 @@ router.get("/earthquakes_per_year", (_, res) => {
             res.status(500).send(err);
             return false;
         } else {
-            sql.query("SELECT YEAR(EventDate) as 'year' , COUNT(*) as 'count' FROM EarthquakeData GROUP BY YEAR(EventDate);").then(sql_res => {
+            sql.query("SELECT YEAR(event_date) as 'year' , COUNT(*) as 'count' FROM EarthquakeData GROUP BY YEAR(event_date);").then(sql_res => {
                 let count = sql_res.recordset;
 
                 res.status(200).json(count);
