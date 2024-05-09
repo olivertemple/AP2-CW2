@@ -363,4 +363,22 @@ router.get("/observatory", (req, res) => {
         }
     })
 })
+
+router.get("/earthquakes_per_year", (_, res) => {
+    sql.connect(config, async err => {
+        if (err) {
+            res.status(500).send(err);
+            return false;
+        } else {
+            sql.query("SELECT YEAR(EventDate) as 'year' , COUNT(*) as 'count' FROM EarthquakeData GROUP BY YEAR(EventDate);").then(sql_res => {
+                let count = sql_res.recordset;
+
+                res.status(200).json(count);
+
+            }).catch(err => {
+                res.status(500).send(err);
+            })
+        }
+    });
+})
 module.exports = router;
