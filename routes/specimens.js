@@ -117,7 +117,7 @@ const searchSchema = {
     is_sold: ["boolean", false]
 }
 
-router.get("/search", (req, res) => {
+router.post("/search", (req, res) => {
     let search_params = req.body;
 
     let errors = check_body_schema(search_params, searchSchema);
@@ -147,9 +147,7 @@ router.get("/search", (req, res) => {
     conditions = conditions.join(" AND ")
 
     query = query + conditions
-    
-    console.log(query)
-    
+        
     sql.connect(config, async err => {
         if (err) {
             res.status(500).json({message: "Could not connect to server", errors: err});
