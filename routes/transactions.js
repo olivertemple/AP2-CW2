@@ -41,7 +41,7 @@ router.post("/add_transaction", (req, res) => {
 
     sql.connect(config, async err => {
         if (err) {
-            res.status(500).send(err);
+            res.status(500).json({message: "Could not connect to server", errors: err});
             return false;
         }
 
@@ -98,11 +98,11 @@ router.post("/add_transaction", (req, res) => {
                 req.body.date_of_purchase
             )
 
-            res.status(200).send();
+            res.status(200).json({message: "Succes", errors: err});
             return true;
         } catch (err) {
             console.log(err)
-            res.status(500).send(err);
+            res.status(500).json({message: "Server error", errors: err});
             return false;
         }
     })
@@ -110,12 +110,12 @@ router.post("/add_transaction", (req, res) => {
 
 router.get("/transaction_collected", (req, res) => {
     if (!req.query.id) {
-        res.status(400).send("no id sent");
+        res.status(400).json({message: "No ID sent"});
         return false;
     }
 
     if (!parseInt(req.query.id, 10)) {
-        res.status(400).send("invalid id");
+        res.status(400).json({message: "Invalid ID"});
         return false;
     }
 
@@ -123,7 +123,7 @@ router.get("/transaction_collected", (req, res) => {
 
     sql.connect(config, async err => {
         if (err) {
-            res.status(500).send(err);
+            res.status(500).json({message: "Could not connect to server", errors: err});
             return false;
         }
 
@@ -174,11 +174,11 @@ router.get("/transaction_collected", (req, res) => {
                 orders[0].date_of_purchase
             )
 
-            res.status(200).send();
+            res.status(200).json({message: "Success"});
             return true;
         } catch (err) {
             console.log(err)
-            res.status(500).send(err);
+            res.status(500).json({message: "Server error", errors: err});
             return false;
         }
     })
