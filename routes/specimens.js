@@ -140,7 +140,9 @@ const searchSchema = {
     current_location: ["string", false],
     is_sample_required: ["boolean", false],
     item_value: ["number", false],
-    is_sold: ["boolean", false]
+    is_sold: ["boolean", false],
+    max_price: ["number", false],
+    min_price: ["number", false]
 }
 
 router.post("/search", (req, res) => {
@@ -165,16 +167,16 @@ router.post("/search", (req, res) => {
 
     if (keys.includes("min_price") && keys.includes("max_price")) {
         if (search_params.min_price > search_params.max_price) {
-            res.status(400).json({message: "Minimu price is larger than maximum price"});
+            res.status(400).json({message: "Minimum price is larger than maximum price"});
             return false;
         }
     }
 
-    if (keys.includes("min_price")){
+    if (keys.includes("min_price")) {
         sql_query.push(`(item_value >= ${search_params.min_price})`);
     }
-
-    if (keys.includes("max_price")){
+    
+    if (keys.includes("max_price")) {
         sql_query.push(`(item_value <= ${search_params.max_price})`);
     }
 
@@ -191,7 +193,15 @@ router.post("/search", (req, res) => {
     }
 
     if (keys.includes("sample_type")) {
-        sql_query.push(`(sample_type = ${search_params['sample_type']})`);
+        sql_query.push(`(sample_type = '${search_params['sample_type']}')`);
+    }
+
+    if (keys.includes("is_sample_required")) {
+        sql_query.push(`(is_sample_required = ${search_params['is_sample_required']})`);
+    }
+
+    if (keys.includes("is_sold")) {
+        sql_query.push(`(is_sold = ${search_params['is_sold']})`);
     }
 
     if (sql_query.length == 0) {
@@ -200,31 +210,18 @@ router.post("/search", (req, res) => {
         return false;
     }
 
-    let query;
-    query = `SELECT * FROM SampleData WHERE `;
-
-    let conditions
-    conditions = [];
-    
-    for (let key in search_params){
-        conditions.push(`${key} = '${search_params[key]}'`)
-    }
-
-    conditions = conditions.join(" AND ")
-
-    query = query + conditions
-        
+    let query = "SELECT * FROM SampleData WHERE " + sql_query.join(` ${search_params['AND']} `);
+    console.log(query)
     sql.connect(config, async err => {
         if (err) {
             res.status(500).json({message: "Could not connect to server", errors: err});
-
+            return false;
         } else {
             sql.query(query).then(sql_res => {
                 res.json(sql_res.recordset);
                 return true;
             }).catch(err => {
                 res.status(500).json({message: "Could not complete search", errors: err});
-
                 return false;
             })
         }
