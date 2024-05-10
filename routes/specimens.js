@@ -63,7 +63,8 @@ router.post("/create", (req, res) => {
     }
     sql.connect(config, async err => {
         if (err) {
-            res.status(500).send(err);
+            res.status(500).json({message: "Could not connect to server", errors: err});
+
         } else {
             try{
                 let max_id_sql = await sql.query("SELECT MAX(sample_id) as 'max' from SampleData");
@@ -92,11 +93,13 @@ router.post("/create", (req, res) => {
                     res.status(200).send("Specimen added");
                     return true;
                 }).catch(err => {
-                    res.status(500).send(`could not add specimen, ${err}`);
+                    res.status(500).json({message: "Could not add specimen", errors: err});
+
                     return false;
                 })
             } catch (err) {
-                res.status(500).send(err);
+                res.status(500).json({message: "Server error", errors: err});
+
             }
             
         }
@@ -110,13 +113,15 @@ router.get("/get_all_specimens", (req, res) => {
     
     sql.connect(config, async err => {
         if (err) {
-            res.status(500).send(err);
+            res.status(500).json({message: "Could not connect to server", errors: err});
+
         } else {
             sql.query("SELECT * FROM SampleData").then(sql_res => {
                 res.json(sql_res.recordset);
                 return true;
             }).catch(err => {
-                res.status(500).send(err);
+                res.status(500).json({message: "Could not retrieve specimens", errors: err});
+
                 return false;
             })
         }
@@ -149,7 +154,8 @@ router.post("/search", (req, res) => {
 
     let keys = Object.keys(search_params);
     if (keys.length == 0) {
-        res.status(400).send("Missing search parameters");
+        res.status(400).json({message: "Missing search parameters", errors: err});
+
         return false;
     }
 
@@ -167,18 +173,18 @@ router.post("/search", (req, res) => {
     conditions = conditions.join(" AND ")
 
     query = query + conditions
-    
-    console.log(query)
-    
+        
     sql.connect(config, async err => {
         if (err) {
-            res.status(500).send(err);
+            res.status(500).json({message: "Could not connect to server", errors: err});
+
         } else {
             sql.query(query).then(sql_res => {
                 res.json(sql_res.recordset);
                 return true;
             }).catch(err => {
-                res.status(500).send(err);
+                res.status(500).json({message: "Could not complete search", errors: err});
+
                 return false;
             })
         }
@@ -202,7 +208,8 @@ router.post("/delete", (req, res) => {
 
     let keys = Object.keys(delete_params);
     if (keys.length == 0) {
-        res.status(400).send("Missing search parameters");
+        res.status(400).json({message: "missing sample ID"});
+
         return false;
     }
 
@@ -211,20 +218,22 @@ router.post("/delete", (req, res) => {
 
     sql.connect(config, async err => {
         if (err) {
-            res.status(500).send(err);
+            res.status(500).json({message: "Could not connect to server", errors: err});
+
         } else {
             try{
 
                 sql.query(query
                 ).then(_ => {
-                    res.status(200).send("Specimen deleted");
+                    res.status(200).json({message: "Specimen deleted"});
                     return true;
                 }).catch(err => {
-                    res.status(500).send(`could not delete specimen, ${err}`);
+                    res.status(500).json({message: "Could not delete specimen", errors: err});
                     return false;
                 })
             } catch (err) {
-                res.status(500).send(err);
+                res.status(500).json({message: "Server error", errors: err});
+
             }
             
         }
@@ -236,13 +245,14 @@ router.get("/to_sell", (req, res) => {
     
     sql.connect(config, async err => {
         if (err) {
-            res.status(500).send(err);
+            res.status(500).json({message: "Could not connect to server", errors: err});
         } else {
             sql.query("SELECT * FROM SampleData WHERE is_sample_required = 0").then(sql_res => {
                 res.json(sql_res.recordset);
                 return true;
             }).catch(err => {
-                res.status(500).send(err);
+                res.status(500).json({message: "Could not retrieve specimens", errors: err});
+
                 return false;
             })
         }
@@ -267,7 +277,7 @@ router.post("/add_to_shop", (req, res) =>{
 
     let keys = Object.keys(price_params);
     if (keys.length == 0) {
-        res.status(400).send("Missing search parameters");
+        res.status(400).json({message: "Missing search parameters"});
         return false;
     }
 
@@ -276,20 +286,22 @@ router.post("/add_to_shop", (req, res) =>{
 
     sql.connect(config, async err => {
         if (err) {
-            res.status(500).send(err);
+            res.status(500).json({message: "Couldn't connect to server", errors: err});
         } else {
             try{
 
                 sql.query(query
                 ).then(_ => {
-                    res.status(200).send("Item can be sold");
+                    res.status(200).json({message: "Item can be sold"});
                     return true;
                 }).catch(err => {
-                    res.status(500).send(`could not alter item status, ${err}`);
+                    res.status(500).json({message: "Could not alter item status", errors: err});
+
                     return false;
                 })
             } catch (err) {
-                res.status(500).send(err);
+                res.status(500).json({message: "SQL error", errors: err});
+
             }
             
         }
