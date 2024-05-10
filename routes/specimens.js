@@ -3,7 +3,9 @@ const { check_body_schema } = require("../utils/services");
 const router = express.Router();
 const sql = require("mssql");
 const dotenv = require('dotenv');
-
+var firebase = require("firebase/app");
+var storage = require("firebase/storage");
+const bodyBarser = require('body-parser');
 dotenv.config();
 
 var config = {
@@ -17,6 +19,19 @@ var config = {
     },
 }
 
+const firebaseConfig = {
+    apiKey: "AIzaSyCUZzDn59QybFV3iduWhriy6ziqFuuTrWA",
+    authDomain: "seiswatch-b4c2f.firebaseapp.com",
+    projectId: "seiswatch-b4c2f",
+    storageBucket: "seiswatch-b4c2f.appspot.com",
+    messagingSenderId: "998371569633",
+    appId: "1:998371569633:web:00b1450e94a20dc8f72ca0"
+};
+const app = firebase.initializeApp(firebaseConfig);
+
+const bucket = storage.getStorage();
+const imageRef = storage.ref(bucket, 'images');
+
 router.get("/", (req, res) => {
     res.json({endpoint: "specimens"})
 })
@@ -29,7 +44,8 @@ const createBodySchema = {
     latitude: ['number', true],
     country: ["string", true],
     current_location: ["string", true],
-    observations: ["string", true]
+    observations: ["string", true],
+    image: ["string", true] //base64 encoded image please
 }
 
 const IsSampleRequired = true
@@ -38,6 +54,8 @@ const IsSold = false
 const shop_description = ''
 
 router.post("/create", (req, res) => {
+    
+
     let errors = check_body_schema(req.body, createBodySchema);
     if (errors.length > 0) {
         res.status(400).json({message: "Invalid request body", errors: errors});
@@ -49,6 +67,13 @@ router.post("/create", (req, res) => {
 
         } else {
             try{
+                let max_id_sql = await sql.query("SELECT MAX(sample_id) as 'max' from SampleData");
+                let max_id = max_id_sql.recordset[0].max + 1;
+
+                let image_ref = storage.ref(imageRef, `${max_id}-${req.body.collection_date}-${req.body.longitude}-${req.body.latitude}`);
+                let snapshot = await storage.uploadString(image_ref, req.body.image, 'base64')
+                console.log(snapshot.downloadURL);
+                let image_url = await storage.getDownloadURL(image_ref)
 
                 sql.query(`INSERT INTO SampleData VALUES (
                     '${req.body.earthquake_id}',
@@ -62,9 +87,10 @@ router.post("/create", (req, res) => {
                     '${ItemValue}',
                     '${IsSold}',
                     '${req.body.observations}',
-                    '${shop_description}'
-                )`).then(_ => {
-                    res.status(200).json({message: "Specimen added"});
+                    '${shop_description}',
+                    '${image_url}'
+                )`).then(async _ => {
+                    res.status(200).send("Specimen added");
                     return true;
                 }).catch(err => {
                     res.status(500).json({message: "Could not add specimen", errors: err});
