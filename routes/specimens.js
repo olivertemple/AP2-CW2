@@ -146,19 +146,59 @@ const searchSchema = {
 router.post("/search", (req, res) => {
     let search_params = req.body;
 
+    let new_body = {}
+    for (let key in search_params){
+        if (search_params[key] && search_params[key] != ""){
+            new_body[key] = search_params[key];
+        }
+    }
+    search_params = new_body;
+
     let errors = check_body_schema(search_params, searchSchema);
     if (errors.length > 0) {
         res.status(400).json({message: "Invalid request body", errors: errors});
         return false;
     }
 
+    let sql_query = [];
     let keys = Object.keys(search_params);
-    if (keys.length == 0) {
-        res.status(400).json({message: "Missing search parameters", errors: err});
+
+    if (keys.includes("min_price") && keys.includes("max_price")) {
+        if (search_params.min_price > search_params.max_price) {
+            res.status(400).json({message: "Minimu price is larger than maximum price"});
+            return false;
+        }
+    }
+
+    if (keys.includes("min_price")){
+        sql_query.push(`(item_value >= ${search_params.min_price})`);
+    }
+
+    if (keys.includes("max_price")){
+        sql_query.push(`(item_value <= ${search_params.max_price})`);
+    }
+
+    if (keys.includes("sample_id")) {
+        sql_query.push(`(sample_id = ${search_params['sample_id']})`);
+    }
+
+    if (keys.includes("earthquake_id")) {
+        sql_query.push(`(earthquake_id = ${search_params['earthquake_id']})`);
+    }
+
+    if (keys.includes("country")) {
+        sql_query.push(`(country = '${search_params['country']}')`);
+    }
+
+    if (keys.includes("sample_type")) {
+        sql_query.push(`(sample_type = ${search_params['sample_type']})`);
+    }
+
+    if (sql_query.length == 0) {
+        res.status(400).json({message: "No search parameters"});
 
         return false;
     }
-
 
     let query;
     query = `SELECT * FROM SampleData WHERE `;
