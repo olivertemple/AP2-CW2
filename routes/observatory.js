@@ -35,7 +35,7 @@ router.post("/create", (req, res) => {
 
     sql.connect(config, async err => {
         if (err){
-            res.status(500).send(err);
+            res.status(500).json({message: "Could not connect to server", errors: err});
         }else{
             sql.query(`INSERT INTO ObservatoryData VALUES (
                 '${req.body.name}',
@@ -44,9 +44,9 @@ router.post("/create", (req, res) => {
                 ${req.body.longitude},
                 '${req.body.date_established}'
             )`).then(_ => {
-                res.status(200).send();
+                res.status(200).json({message: "Observatory added"});
             }).catch(err => {
-                res.status(500).send(err);
+                res.status(500).json({message: "COuld not create observatory", errors: err});
             })
         }
     })
@@ -54,20 +54,20 @@ router.post("/create", (req, res) => {
 
 router.get("/largest_magnitude", (req, res) => {
     if (!req.query.id){
-        res.status(400).send("no id sent");
+        res.status(400).json({message: "No ID sent"});
         return false;
     }
     let observatory_id = req.query.id;
     sql.connect(config, async err => {
         if (err){
-            res.status(500).send(err);
+            res.status(500).json({message: "Could not connect to server", errors: err});
             return false;
         }else{
             sql.query(`SELECT * from EarthquakeData e WHERE e.magnitude = (SELECT MAX(magnitude) FROM EarthquakeData WHERE observatory_id = ${observatory_id}) `).then(sql_res => {
                 res.json(sql_res.recordset);
                 return true;
             }).catch(err => {
-                res.status(500).send(err);
+                res.status(500).json({message: "Could not get earthquake", errors: err});
                 return false;
             })
         }
@@ -76,21 +76,21 @@ router.get("/largest_magnitude", (req, res) => {
 
 router.get("/average_magnitude", (req, res) => {
     if (!req.query.id) {
-        res.status(400).send("no id sent");
+        res.status(400).json({message: "No ID sent"});
         return false;
     }
 
     let observatory_id = req.query.id;
     sql.connect(config, async err => {
         if (err){
-            res.status(500).send(err);
+            res.status(500).json({message: "Could not connect to server", errors: err});
             return false;
         }else{
             sql.query(`SELECT AVG(magnitude) FROM EarthquakeData WHERE observatory_id = ${observatory_id}`).then(sql_res => {
                 res.json({"average_magnitude": sql_res.recordset[0]['']});
                 return true;
             }).catch(err => {
-                res.status(500).send(err);
+                res.status(500).json({message: "Could not get earthquakes", errors: err});
                 return false;
             })
         }
@@ -99,14 +99,14 @@ router.get("/average_magnitude", (req, res) => {
 
 router.get("/average_number", (req, res) => {
     if (!req.query.id) {
-        res.status(400).send("no id sent");
+        res.status(400).json({message: "No ID sent"});
         return false;
     }
     let observatory_id = req.query.id;
 
     sql.connect(config, async err => {
         if (err) {
-            res.status(500).send(err);
+            res.status(500).json({message: "Could not connect to server", errors: err});
             return false;
         } else {
             try {
@@ -119,7 +119,8 @@ router.get("/average_number", (req, res) => {
 
                 let sql_res_date = await sql.query(`SELECT established_date FROM ObservatoryData WHERE observatory_id = ${observatory_id}`)
                 if (sql_res_date.recordset.length == 0) {
-                    res.status(400).send(`observatory with id of ${observatory_id} not found`);
+                    err_msg = `observatory with id of ${observatory_id} not found`
+                    res.status(400).json({message: err_msg});
                     return false;
                 }
                 let num_years = new Date().getFullYear() - new Date(sql_res_date.recordset[0].EstablishedDate).getFullYear();
@@ -127,7 +128,7 @@ router.get("/average_number", (req, res) => {
 
                 res.json({"average_number": average});
             } catch (err) {
-                res.status(500).send(err);
+                res.status(500).json({message: "Could not complete request", errors: err});
                 return false;
             }
         }
@@ -137,13 +138,13 @@ router.get("/average_number", (req, res) => {
 router.get("/all_observatories", (req, res) => {
     sql.connect(config, async err => {
         if (err) {
-            res.status(500).send(err);
+            res.status(500).json({message: "Could not connect to server", errors: err});
             return false;
         } else {
             sql.query("SELECT * FROM ObservatoryData").then(sql_res => {
                 res.json(sql_res.recordset);
             }).catch(err => {
-                res.status(500).send(err);
+                res.status(500).json({message: "Could not get observatories", errors: err});
             })
         }
     })
