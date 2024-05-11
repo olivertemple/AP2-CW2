@@ -138,24 +138,24 @@ const searchSchema = {
     latitude: ['number', false],
     country: ["string", false],
     current_location: ["string", false],
-    is_sample_required: ["boolean", false],
+    is_sample_required: ["number", false],
     item_value: ["number", false],
-    is_sold: ["boolean", false],
+    is_sold: ["number", false],
     max_price: ["number", false],
     min_price: ["number", false]
 }
 
 router.post("/search", (req, res) => {
     let search_params = req.body;
-
+    console.log(search_params)
     let new_body = {}
     for (let key in search_params){
-        if (search_params[key] && search_params[key] != ""){
+        if (search_params[key] != null && search_params[key] != "" || search_params[key] === 0){
             new_body[key] = search_params[key];
         }
     }
     search_params = new_body;
-
+    console.log(search_params)
     let errors = check_body_schema(search_params, searchSchema);
     if (errors.length > 0) {
         res.status(400).json({message: "Invalid request body", errors: errors});
@@ -210,7 +210,7 @@ router.post("/search", (req, res) => {
         return false;
     }
 
-    let query = "SELECT * FROM SampleData WHERE " + sql_query.join(` ${search_params['AND']} `);
+    let query = "SELECT * FROM SampleData WHERE " + sql_query.join(' AND ');
     console.log(query)
     sql.connect(config, async err => {
         if (err) {
