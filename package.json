@@ -8,6 +8,7 @@
     "mailgen": "^2.0.28",
     "mssql": "^10.0.2",
     "nodemailer": "^6.9.13",
+    "stripe": "^15.6.0",
     "tedious": "^18.1.0",
     "winston": "^3.13.0"
   },

@@ -5,8 +5,9 @@ const sql = require("mssql");
 const dotenv = require('dotenv');
 const { sendMailOrderConfirmation } = require("../utils/email");
 
-
 dotenv.config();
+
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
 var config = {
     "user": process.env.USER, // Database username
@@ -123,6 +124,30 @@ router.post("/add_transaction", (req, res) => {
     })
 })
 
+router.post("/create_stripe_session", async (req, res) => {
+    var lineItems = [];
+    const items = req.body;
+    for (let item of items) {
+        lineItems.push({
+            price_data: {
+            currency: 'eur',
+            product_data: {
+                name: item.observations,
+            },
+            unit_amount_decimal: item.item_value*100,
+            },
+            quantity: 1,
+        })
+    }
+    const session = await stripe.checkout.sessions.create({
+        line_items: lineItems,
+        mode: 'payment',
+        success_url: 'http://localhost:8100/checkout/success',
+        cancel_url: 'http://localhost:8100/checkout',
+    });
+    
+    res.status(200).json({checkoutURL: session.url})
+})
 
 /**
  * Updates the transaction status to 'collected' in the database.
@@ -137,7 +162,6 @@ router.post("/add_transaction", (req, res) => {
  * @throws {Error} - Throws an error if the order number is not provided in the request query.
  * @throws {Error} - Throws an error if the provided order number is invalid or not found in the database.
  */
-
 router.get("/transaction_collected", (req, res) => {
     if (!req.query.id) {
         res.status(400).json({message: "No ID sent"});
