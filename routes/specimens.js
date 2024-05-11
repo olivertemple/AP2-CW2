@@ -54,6 +54,20 @@ const IsSold = false
 const shop_description = ''
 const empty_item_name = ''
 
+
+/**
+ * This function handles the POST request to the "/create" endpoint.
+ * It adds a new specimen to the database by validating the request body,
+ * uploading the image to Firebase Storage, and inserting the data into the SQL Server database.
+ *
+ * @param {Request} req - The request object representing the HTTP request.
+ * @param {Response} res - The response object representing the HTTP response.
+ *
+ * @returns {void} This function does not return any value.
+ *
+ * @throws {HTTPError} If the request body is invalid or if there is an error connecting to the database or Firebase Storage.
+ */
+
 router.post("/create", (req, res) => {
     
 
@@ -92,7 +106,7 @@ router.post("/create", (req, res) => {
                     '${image_url}',
                     '${empty_item_name}'
                 )`).then(async _ => {
-                    res.status(200).send("Specimen added");
+                    res.status(200).json({message:"Specimen added"});
                     return true;
                 }).catch(err => {
                     res.status(500).json({message: "Could not add specimen", errors: err});
@@ -109,6 +123,17 @@ router.post("/create", (req, res) => {
 
 })
 
+/**
+ * This function handles the GET request to the "/get_all_specimens" endpoint.
+ * It retrieves all specimens from the database and sends them as a JSON response.
+ *
+ * @param {Request} req - The request object representing the HTTP request.
+ * @param {Response} res - The response object representing the HTTP response.
+ *
+ * @returns {void} This function does not return any value.
+ *
+ * @throws {HTTPError} If there is an error connecting to the database.
+ */
 
 router.get("/get_all_specimens", (req, res) => {
 
@@ -145,6 +170,18 @@ const searchSchema = {
     is_sold: ["boolean", false]
 }
 
+/**
+ * This function handles the POST request to the "/search" endpoint.
+ * It searches for specimens based on the provided search parameters and sends the matching results as a JSON response.
+ *
+ * @param {Request} req - The request object representing the HTTP request.
+ * @param {Response} res - The response object representing the HTTP response.
+ *
+ * @returns {void} This function does not return any value.
+ *
+ * @throws {HTTPError} If the request body is invalid or if there is an error connecting to the database.
+ */
+
 router.post("/search", (req, res) => {
     let search_params = req.body;
 
@@ -160,7 +197,6 @@ router.post("/search", (req, res) => {
 
         return false;
     }
-
 
     let query;
     query = `SELECT * FROM SampleData WHERE `;
@@ -198,6 +234,18 @@ router.post("/search", (req, res) => {
 deleteSchema = {
     sample_id: ["number", true]
 }
+
+/**
+ * This function handles the POST request to the "/delete" endpoint.
+ * It deletes a specimen from the database based on the provided sample ID.
+ *
+ * @param {Request} req - The request object representing the HTTP request.
+ * @param {Response} res - The response object representing the HTTP response.
+ *
+ * @returns {void} This function does not return any value.
+ *
+ * @throws {HTTPError} If the request body is invalid or if there is an error connecting to the database.
+ */
 
 router.post("/delete", (req, res) => {
     let delete_params = req.body;
@@ -243,6 +291,18 @@ router.post("/delete", (req, res) => {
 
 })
 
+/**
+ * This function handles the GET request to the "/to_sell" endpoint.
+ * It retrieves all specimens from the database that are marked as not required, and therefore can be sold.
+ *
+ * @param {Request} req - The request object representing the HTTP request.
+ * @param {Response} res - The response object representing the HTTP response.
+ *
+ * @returns {void} This function does not return any value.
+ *
+ * @throws {HTTPError} If there is an error connecting to the database.
+ */
+
 router.get("/to_sell", (req, res) => {
     
     sql.connect(config, async err => {
@@ -268,6 +328,18 @@ priceSchema = {
     shop_description: ["string", true],
     item_name: ["string", true]
 }
+
+/**
+ * This function handles the POST request to the "/add_to_shop" endpoint.
+ * It updates the database to mark a specimen as available for sale, and sets the item's price, description, and name.
+ *
+ * @param {Request} req - The request object representing the HTTP request.
+ * @param {Response} res - The response object representing the HTTP response.
+ *
+ * @returns {void} This function does not return any value.
+ *
+ * @throws {HTTPError} If the request body is invalid or if there is an error connecting to the database.
+ */
 
 router.post("/add_to_shop", (req, res) =>{
     let price_params = req.body;
