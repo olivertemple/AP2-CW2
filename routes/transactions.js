@@ -5,8 +5,9 @@ const sql = require("mssql");
 const dotenv = require('dotenv');
 const { sendMailOrderConfirmation } = require("../utils/email");
 
-
 dotenv.config();
+
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
 var config = {
     "user": process.env.USER, // Database username
@@ -106,6 +107,31 @@ router.post("/add_transaction", (req, res) => {
             return false;
         }
     })
+})
+
+router.post("/create_stripe_session", async (req, res) => {
+    var lineItems = [];
+    const items = req.body;
+    for (let item of items) {
+        lineItems.push({
+            price_data: {
+            currency: 'eur',
+            product_data: {
+                name: item.observations,
+            },
+            unit_amount_decimal: item.item_value*100,
+            },
+            quantity: 1,
+        })
+    }
+    const session = await stripe.checkout.sessions.create({
+        line_items: lineItems,
+        mode: 'payment',
+        success_url: 'http://localhost:8100/checkout/success',
+        cancel_url: 'http://localhost:8100/checkout',
+    });
+    
+    res.status(200).json({checkoutURL: session.url})
 })
 
 router.get("/transaction_collected", (req, res) => {
