@@ -123,7 +123,7 @@ router.get("/average_number", (req, res) => {
                     res.status(400).json({message: err_msg});
                     return false;
                 }
-                let num_years = new Date().getFullYear() - new Date(sql_res_date.recordset[0].EstablishedDate).getFullYear();
+                let num_years = new Date().getFullYear() - new Date(sql_res_date.recordset[0].established_date).getFullYear();
                 let average = total / num_years;
 
                 res.json({"average_number": average});
