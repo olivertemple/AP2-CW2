@@ -128,7 +128,7 @@ router.post("/create_stripe_session", async (req, res) => {
         const session = await stripe.checkout.sessions.create({
             line_items: lineItems,
             mode: 'payment',
-            success_url: 'http://localhost:8100/checkout/success?session_id={CHECKOUT_SESSION_IDAd}',
+            success_url: 'http://localhost:8100/checkout/success?session_id={CHECKOUT_SESSION_ID}',
             cancel_url: 'http://localhost:8100/checkout',
         });
         
