@@ -52,6 +52,7 @@ const IsSampleRequired = true
 const ItemValue = 0
 const IsSold = false
 const shop_description = ''
+const empty_item_name = ''
 
 router.post("/create", (req, res) => {
     
@@ -88,7 +89,8 @@ router.post("/create", (req, res) => {
                     '${IsSold}',
                     '${req.body.observations}',
                     '${shop_description}',
-                    '${image_url}'
+                    '${image_url}',
+                    '${empty_item_name}'
                 )`).then(async _ => {
                     res.status(200).send("Specimen added");
                     return true;
@@ -263,7 +265,8 @@ router.get("/to_sell", (req, res) => {
 priceSchema = {
     item_value: ["number", true],
     sample_id: ["number", true],
-    shop_description: ["string", true]
+    shop_description: ["string", true],
+    item_name: ["string", true]
 }
 
 router.post("/add_to_shop", (req, res) =>{
@@ -282,7 +285,7 @@ router.post("/add_to_shop", (req, res) =>{
     }
 
     let query;
-    query = `UPDATE SampleData SET is_sample_required = 0, item_value = '${req.body.item_value}', shop_description = '${req.body.shop_description}' WHERE sample_id = '${req.body.sample_id}'`
+    query = `UPDATE SampleData SET is_sample_required = 0, item_value = '${req.body.item_value}', shop_description = '${req.body.shop_description}', item_name = '${req.body.item_name}' WHERE sample_id = '${req.body.sample_id}'`
 
     sql.connect(config, async err => {
         if (err) {
