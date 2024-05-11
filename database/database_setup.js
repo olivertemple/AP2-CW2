@@ -21,7 +21,7 @@ let earthquakeTable = "CREATE TABLE EarthquakeData ( \
     longitude FLOAT NOT NULL, \
     latitude FLOAT NOT NULL, \
     observatory_id INT FOREIGN KEY REFERENCES ObservatoryData(observatory_id) NOT NULL, \
-    earthquake_type VARCHAR(50) CHECK (earthquake_type IN ('tectonic', 'collapse', 'explosion')) NOT NULL, \
+    earthquake_type VARCHAR(50) CHECK (earthquake_type IN ('tectonic', 'collapse', 'explosion', 'volcanic')) NOT NULL, \
     seismic_wave_type VARCHAR(50) CHECK (seismic_wave_type IN ('p', 's', 'love', 'rayleigh')) NOT NULL \
 );"
 
