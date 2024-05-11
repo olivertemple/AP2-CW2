@@ -110,28 +110,34 @@ router.post("/add_transaction", (req, res) => {
 })
 
 router.post("/create_stripe_session", async (req, res) => {
-    var lineItems = [];
-    const items = req.body;
-    for (let item of items) {
-        lineItems.push({
-            price_data: {
-            currency: 'eur',
-            product_data: {
-                name: item.observations,
-            },
-            unit_amount_decimal: item.item_value*100,
-            },
-            quantity: 1,
-        })
+    try {
+        var lineItems = [];
+        const items = req.body;
+        for (let item of items) {
+            lineItems.push({
+                price_data: {
+                currency: 'eur',
+                product_data: {
+                    name: item.observations,
+                },
+                unit_amount_decimal: item.item_value*100,
+                },
+                quantity: 1,
+            })
+        }
+        const session = await stripe.checkout.sessions.create({
+            line_items: lineItems,
+            mode: 'payment',
+            success_url: 'http://localhost:8100/checkout/success',
+            cancel_url: 'http://localhost:8100/checkout',
+        });
+        
+        res.status(200).json({checkoutURL: session.url})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: "Yeah nah you cant pay for this stuff right now... (Why dont you just steal it?)", errors: err});
+        return false;
     }
-    const session = await stripe.checkout.sessions.create({
-        line_items: lineItems,
-        mode: 'payment',
-        success_url: 'http://localhost:8100/checkout/success',
-        cancel_url: 'http://localhost:8100/checkout',
-    });
-    
-    res.status(200).json({checkoutURL: session.url})
 })
 
 router.get("/transaction_collected", (req, res) => {
