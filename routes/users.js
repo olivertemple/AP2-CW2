@@ -66,7 +66,8 @@ router.post("/search", (req, res) => {
     })
 })
 
-router.post("/get_all_users", (req, res) => {
+//does this appear in push to main?
+router.get("/get_all_users", (req, res) => {
 
     let query = `SELECT * FROM users`;
     
