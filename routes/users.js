@@ -29,6 +29,20 @@ const searchSchema = {
     observatory_id: ["number", false]
 }
 
+/**
+ * Searches for users based on the provided search parameters.
+ *
+ * @name search
+ * @route {POST} /search
+ *
+ * @param {object} req - The request object containing the search parameters.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if the request body is invalid.
+ * @throws {Error} - Throws an error if there is an error executing the query to retrieve the user data.
+ */
+
 router.post("/search", (req, res) => {
     let search_params = req.body;
 
@@ -76,6 +90,21 @@ const createBodySchema = {
     email: ["string", true],
     observatory_id: ["number", false]
 }
+
+/**
+ * Creates a new user based on the provided information.
+ *
+ * @name create
+ * @route {POST} /create
+ *
+ * @param {object} req - The request object containing the user information.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if the request body is invalid.
+ * @throws {Error} - Throws an error if there is an error executing the query to add the user data.
+ *
+ */
 
 router.post("/create", (req, res) => {
     let errors = check_body_schema(req.body, createBodySchema);
@@ -151,6 +180,20 @@ router.post("/create", (req, res) => {
     })
 })
 
+/**
+ * Deletes a user based on the provided user ID.
+ *
+ * @name delete
+ * @route {GET} /delete
+ *
+ * @param {object} req - The request object containing the user ID.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if the user ID is not provided or is invalid.
+ * @throws {Error} - Throws an error if there is an error executing the query to delete the user data.
+ */
+
 router.get("/delete", (req, res) => {
     if (!req.query.id) {
         res.status(400).send("no id sent");
@@ -190,6 +233,20 @@ const loginBodySchema = {
     username: ['string', true],
     password: ['string', true]
 }
+
+/**
+ * Authenticates a user based on the provided username and password.
+ *
+ * @name login
+ * @route {POST} /login
+ *
+ * @param {object} req - The request object containing the username and password.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if the request body is invalid.
+ * @throws {Error} - Throws an error if the provided credentials are invalid.
+ */
 
 router.post("/login", (req, res) => {
     let errors = check_body_schema(req.body, loginBodySchema);

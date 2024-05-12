@@ -29,6 +29,21 @@ const addTransactionSchema = {
     date_of_purchase: ["string", true],
     sample_ids: ["object", true]
 }
+
+/**
+ * Adds a new transaction to the database.
+ *
+ * @name add_transaction
+ * @route {POST} /add_transaction
+ *
+ * @param {object} req - The request object containing the transaction details.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if the request body is invalid.
+ * @throws {Error} - Throws an error if the provided sample IDs are invalid or not available.
+ */
+
 router.post("/add_transaction", (req, res) => {
     let search_params = req.body;
 
@@ -107,6 +122,21 @@ router.post("/add_transaction", (req, res) => {
         }
     })
 })
+
+
+/**
+ * Updates the transaction status to 'collected' in the database.
+ *
+ * @name transaction_collected
+ * @route {GET} /transaction_collected
+ *
+ * @param {object} req - The request object containing the order number.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if the order number is not provided in the request query.
+ * @throws {Error} - Throws an error if the provided order number is invalid or not found in the database.
+ */
 
 router.get("/transaction_collected", (req, res) => {
     if (!req.query.id) {
