@@ -130,10 +130,13 @@ router.post("/create", (req, res) => {
                     '${req.body.email}',
                     '${access_token}',
                     ${req.body.observatory_id || null}
-                )`).then(_ => {
+                )`).then(async () => {
+                    let max_id_sql = await sql.query("SELECT MAX(user_id) as 'max' from users");
+                    let max_id = max_id_sql.recordset[0].max;
                     res.status(200).json({
                         username: req.body.username,
                         first_name: req.body.first_name,
+                        user_id: max_id,
                         last_name: req.body.last_name,
                         user_type: req.body.user_type,
                         access_token: access_token,
@@ -204,15 +207,17 @@ router.post("/login", (req, res) => {
             return false;
         }
 
-        sql.query(`SELECT * FROM users WHERE username='${req.body.username}' AND password='${req.body.password}'`).then(sql_res => {
+        sql.query(`SELECT * FROM users WHERE username='${req.body.username}' AND password='${req.body.password}'`).then(async sql_res => {
             if (sql_res.recordset.length > 0){
+                
                 res.status(200).json({
                     username: sql_res.recordset[0].username,
                     first_name: sql_res.recordset[0].first_name,
                     last_name: sql_res.recordset[0].last_name,
                     user_type: sql_res.recordset[0].user_type,
                     access_token: sql_res.recordset[0].access_token,
-                    observatory_id: sql_res.recordset[0].observatory_id
+                    observatory_id: sql_res.recordset[0].observatory_id,
+                    user_id: sql_res.recordset[0].user_id
                 });
                 return true;
             }
