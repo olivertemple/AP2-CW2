@@ -62,6 +62,10 @@ router.post("/create", (req, res) => {
         res.status(400).json({message: "Invalid request body", errors: errors});
         return false;
     }
+
+    let location = req.body.current_location;
+    
+
     sql.connect(config, async err => {
         if (err) {
             res.status(500).json({message: "Could not connect to server", errors: err});
