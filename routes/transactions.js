@@ -155,6 +155,20 @@ router.post("/create_stripe_session", async (req, res) => {
     }
 })
 
+router.get('/order_successfull', async (req, res) => {
+    try {
+        const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
+        //const customer = await stripe.customers.retrieve(session.customer);
+        const lineItems = await stripe.checkout.sessions.listLineItems(req.query.session_id)
+
+        res.status(200).json({session: session, line_items: lineItems.data});
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: "Yeah nah cant do that at the minute boss man", errors: err});
+        return false;
+    }
+  });
+
 /**
  * Updates the transaction status to 'collected' in the database.
  *
