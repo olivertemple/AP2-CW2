@@ -65,6 +65,7 @@ router.post("/create", (req, res) => {
 
     let location = req.body.current_location;
     const location_format = /^[A-Z]{1}[0-9]{1}$/;
+    //|collected|awaiting collection
     let test_var = location_format.test(location)
     console.log(location + "=" + test_var)
     if (!test_var) {
