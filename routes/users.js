@@ -65,6 +65,28 @@ router.post("/search", (req, res) => {
         }
     })
 })
+
+router.post("/get_all_users", (req, res) => {
+
+    let query = `SELECT * FROM users`;
+    
+    sql.connect(config, async err => {
+        if (err) {
+            res.status(500).send(err);
+            return false;
+        } else {
+            sql.query(query).then(sql_res => {
+                res.json(sql_res.recordset);
+                return true;
+            }).catch(err => {
+                res.status(500).send(err);
+                return false;
+            })
+        }
+    })
+})
+
+
 const createBodySchema = {
     username: ["string", true],
     password: ['string', true],
