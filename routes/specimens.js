@@ -45,7 +45,7 @@ const createBodySchema = {
     country: ["string", true],
     current_location: ["string", true],
     observations: ["string", true],
-    image: ["string", true] //base64 encoded image please
+    image_url: ["string", true] //base64 encoded image please
 }
 
 const IsSampleRequired = true
@@ -64,7 +64,14 @@ router.post("/create", (req, res) => {
     }
 
     let location = req.body.current_location;
-    
+    const location_format = /^[A-Z]{1}[0-9]{1}$/;
+    //|collected|awaiting collection
+    let test_var = location_format.test(location)
+    console.log(location + "=" + test_var)
+    if (!test_var) {
+        res.status(400).json({message: "Invalid location format", errors: location});
+        return false;
+    }
 
     sql.connect(config, async err => {
         if (err) {
@@ -76,10 +83,9 @@ router.post("/create", (req, res) => {
                 let max_id = max_id_sql.recordset[0].max + 1;
 
                 let image_ref = storage.ref(imageRef, `${max_id}-${req.body.collection_date}-${req.body.longitude}-${req.body.latitude}`);
-                let snapshot = await storage.uploadString(image_ref, req.body.image, 'base64')
+                let snapshot = await storage.uploadString(image_ref, req.body.image_url, 'base64')
                 console.log(snapshot.downloadURL);
                 let image_url = await storage.getDownloadURL(image_ref)
-
                 sql.query(`INSERT INTO SampleData VALUES (
                     '${req.body.earthquake_id}',
                     '${req.body.collection_date}',
