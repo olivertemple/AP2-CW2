@@ -133,7 +133,7 @@ router.post("/create_stripe_session", async (req, res) => {
                 price_data: {
                 currency: 'eur',
                 product_data: {
-                    name: item.observations,
+                    name: item.item_id,
                 },
                 unit_amount_decimal: item.item_value*100,
                 },
