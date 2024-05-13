@@ -131,11 +131,11 @@ router.post("/create_stripe_session", async (req, res) => {
         for (let item of items) {
             lineItems.push({
                 price_data: {
-                currency: 'eur',
-                product_data: {
-                    name: item.item_id,
-                },
-                unit_amount_decimal: item.item_value*100,
+                    currency: 'eur',
+                    product_data: {
+                        name: item.sample_id,
+                    },
+                    unit_amount_decimal: item.item_value*100,
                 },
                 quantity: 1,
             })
