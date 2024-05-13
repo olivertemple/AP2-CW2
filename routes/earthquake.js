@@ -452,12 +452,6 @@ router.get("/observatory", (req, res) => {
             try {
                 let sql_res = await sql.query(`SELECT * FROM EarthquakeData WHERE observatory_id = ${observatory_id}`)
 
-                if (sql_res.recordset.length == 0) {
-                    message_var = `observatory with id of ${observatory_id} not found`
-                    res.status(400).json({message: message_var});
-                    return false;
-                }
-
                 res.json(sql_res.recordset);
             } catch (err) {
                 res.status(500).json({message: "Could not get earthquakes", errors: err});
