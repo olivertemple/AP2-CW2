@@ -27,6 +27,22 @@ const createBodySchema = {
     date_established: ['string', true]
 }
 
+
+/**
+ * Creates a new observatory in the ObservatoryData table.
+ *
+ * @name create
+ * @route {POST} /create
+ *
+ * @param {object} req - The request object containing the observatory data.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if the request body is invalid or missing required fields.
+ * @throws {Error} - Throws an error if there is an error executing the query to insert the observatory data.
+ */
+
+
 router.post("/create", (req, res) => {
     let errors = check_body_schema(req.body, createBodySchema);
     if (errors.length > 0) {
@@ -52,6 +68,21 @@ router.post("/create", (req, res) => {
     })
 })
 
+
+/**
+ * Retrieves the earthquake with the largest magnitude from a specific observatory.
+ *
+ * @name largest_magnitude
+ * @route {GET} /largest_magnitude
+ *
+ * @param {object} req - The request object containing the observatory ID as a query parameter.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if the observatory ID is not provided in the request query parameters.
+ * @throws {Error} - Throws an error if there is an error executing the query to retrieve the earthquake data.
+ */
+
 router.get("/largest_magnitude", (req, res) => {
     if (!req.query.id){
         res.status(400).json({message: "No ID sent"});
@@ -74,6 +105,19 @@ router.get("/largest_magnitude", (req, res) => {
     })
 })
 
+/**
+ * Retrieves the average magnitude of earthquakes from a specific observatory.
+ *
+ * @name average_magnitude
+ * @route {GET} /average_magnitude
+ *
+ * @param {object} req - The request object containing the observatory ID as a query parameter.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if the observatory ID is not provided in the request query parameters.
+ * @throws {Error} - Throws an error if there is an error executing the query to retrieve the earthquake data.
+ */
 router.get("/average_magnitude", (req, res) => {
     if (!req.query.id) {
         res.status(400).json({message: "No ID sent"});
@@ -96,6 +140,20 @@ router.get("/average_magnitude", (req, res) => {
         }
     })
 })
+
+/**
+ * Retrieves the average number of earthquakes per year from a specific observatory.
+ *
+ * @name average_number
+ * @route {GET} /average_number
+ *
+ * @param {object} req - The request object containing the observatory ID as a query parameter.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if the observatory ID is not provided in the request query parameters.
+ * @throws {Error} - Throws an error if there is an error executing the query to retrieve the earthquake data.
+ */
 
 router.get("/average_number", (req, res) => {
     if (!req.query.id) {
@@ -135,6 +193,19 @@ router.get("/average_number", (req, res) => {
         }
     })
 })
+
+/**
+ * Retrieves all observatories from the ObservatoryData table.
+ *
+ * @name all_observatories
+ * @route {GET} /all_observatories
+ *
+ * @param {object} req - The request object.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if there is an error executing the query to retrieve the observatory data.
+ */
 
 router.get("/all_observatories", (req, res) => {
     sql.connect(config, async err => {

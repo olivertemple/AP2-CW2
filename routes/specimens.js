@@ -45,13 +45,28 @@ const createBodySchema = {
     country: ["string", true],
     current_location: ["string", true],
     observations: ["string", true],
-    image: ["string", true] //base64 encoded image please
+    image_url: ["string", true] //base64 encoded image please
 }
 
 const IsSampleRequired = true
 const ItemValue = 0
 const IsSold = false
 const shop_description = ''
+const empty_item_name = ''
+
+
+/**
+ * This function handles the POST request to the "/create" endpoint.
+ * It adds a new specimen to the database by validating the request body,
+ * uploading the image to Firebase Storage, and inserting the data into the SQL Server database.
+ *
+ * @param {Request} req - The request object representing the HTTP request.
+ * @param {Response} res - The response object representing the HTTP response.
+ *
+ * @returns {void} This function does not return any value.
+ *
+ * @throws {HTTPError} If the request body is invalid or if there is an error connecting to the database or Firebase Storage.
+ */
 
 router.post("/create", (req, res) => {
     
@@ -61,6 +76,17 @@ router.post("/create", (req, res) => {
         res.status(400).json({message: "Invalid request body", errors: errors});
         return false;
     }
+
+    let location = req.body.current_location;
+    const location_format = /^[A-Z]{1}[0-9]{1}$/;
+    //|collected|awaiting collection
+    let test_var = location_format.test(location)
+    console.log(location + "=" + test_var)
+    if (!test_var) {
+        res.status(400).json({message: "Invalid location format", errors: location});
+        return false;
+    }
+
     sql.connect(config, async err => {
         if (err) {
             res.status(500).json({message: "Could not connect to server", errors: err});
@@ -71,10 +97,9 @@ router.post("/create", (req, res) => {
                 let max_id = max_id_sql.recordset[0].max + 1;
 
                 let image_ref = storage.ref(imageRef, `${max_id}-${req.body.collection_date}-${req.body.longitude}-${req.body.latitude}`);
-                let snapshot = await storage.uploadString(image_ref, req.body.image, 'base64')
+                let snapshot = await storage.uploadString(image_ref, req.body.image_url, 'base64')
                 console.log(snapshot.downloadURL);
                 let image_url = await storage.getDownloadURL(image_ref)
-
                 sql.query(`INSERT INTO SampleData VALUES (
                     '${req.body.earthquake_id}',
                     '${req.body.collection_date}',
@@ -88,9 +113,10 @@ router.post("/create", (req, res) => {
                     '${IsSold}',
                     '${req.body.observations}',
                     '${shop_description}',
-                    '${image_url}'
+                    '${image_url}',
+                    '${empty_item_name}'
                 )`).then(async _ => {
-                    res.status(200).send("Specimen added");
+                    res.status(200).json({message:"Specimen added"});
                     return true;
                 }).catch(err => {
                     res.status(500).json({message: "Could not add specimen", errors: err});
@@ -107,6 +133,17 @@ router.post("/create", (req, res) => {
 
 })
 
+/**
+ * This function handles the GET request to the "/get_all_specimens" endpoint.
+ * It retrieves all specimens from the database and sends them as a JSON response.
+ *
+ * @param {Request} req - The request object representing the HTTP request.
+ * @param {Response} res - The response object representing the HTTP response.
+ *
+ * @returns {void} This function does not return any value.
+ *
+ * @throws {HTTPError} If there is an error connecting to the database.
+ */
 
 router.get("/get_all_specimens", (req, res) => {
 
@@ -144,6 +181,18 @@ const searchSchema = {
     max_price: ["number", false],
     min_price: ["number", false]
 }
+
+/**
+ * This function handles the POST request to the "/search" endpoint.
+ * It searches for specimens based on the provided search parameters and sends the matching results as a JSON response.
+ *
+ * @param {Request} req - The request object representing the HTTP request.
+ * @param {Response} res - The response object representing the HTTP response.
+ *
+ * @returns {void} This function does not return any value.
+ *
+ * @throws {HTTPError} If the request body is invalid or if there is an error connecting to the database.
+ */
 
 router.post("/search", (req, res) => {
     let search_params = req.body;
@@ -234,6 +283,18 @@ deleteSchema = {
     sample_id: ["number", true]
 }
 
+/**
+ * This function handles the POST request to the "/delete" endpoint.
+ * It deletes a specimen from the database based on the provided sample ID.
+ *
+ * @param {Request} req - The request object representing the HTTP request.
+ * @param {Response} res - The response object representing the HTTP response.
+ *
+ * @returns {void} This function does not return any value.
+ *
+ * @throws {HTTPError} If the request body is invalid or if there is an error connecting to the database.
+ */
+
 router.post("/delete", (req, res) => {
     let delete_params = req.body;
 
@@ -278,6 +339,18 @@ router.post("/delete", (req, res) => {
 
 })
 
+/**
+ * This function handles the GET request to the "/to_sell" endpoint.
+ * It retrieves all specimens from the database that are marked as not required, and therefore can be sold.
+ *
+ * @param {Request} req - The request object representing the HTTP request.
+ * @param {Response} res - The response object representing the HTTP response.
+ *
+ * @returns {void} This function does not return any value.
+ *
+ * @throws {HTTPError} If there is an error connecting to the database.
+ */
+
 router.get("/to_sell", (req, res) => {
     
     sql.connect(config, async err => {
@@ -300,8 +373,21 @@ router.get("/to_sell", (req, res) => {
 priceSchema = {
     item_value: ["number", true],
     sample_id: ["number", true],
-    shop_description: ["string", true]
+    shop_description: ["string", true],
+    item_name: ["string", true]
 }
+
+/**
+ * This function handles the POST request to the "/add_to_shop" endpoint.
+ * It updates the database to mark a specimen as available for sale, and sets the item's price, description, and name.
+ *
+ * @param {Request} req - The request object representing the HTTP request.
+ * @param {Response} res - The response object representing the HTTP response.
+ *
+ * @returns {void} This function does not return any value.
+ *
+ * @throws {HTTPError} If the request body is invalid or if there is an error connecting to the database.
+ */
 
 router.post("/add_to_shop", (req, res) =>{
     let price_params = req.body;
@@ -319,7 +405,7 @@ router.post("/add_to_shop", (req, res) =>{
     }
 
     let query;
-    query = `UPDATE SampleData SET is_sample_required = 0, item_value = '${req.body.item_value}', shop_description = '${req.body.shop_description}' WHERE sample_id = '${req.body.sample_id}'`
+    query = `UPDATE SampleData SET is_sample_required = 0, item_value = '${req.body.item_value}', shop_description = '${req.body.shop_description}', item_name = '${req.body.item_name}' WHERE sample_id = '${req.body.sample_id}'`
 
     sql.connect(config, async err => {
         if (err) {

@@ -29,6 +29,20 @@ const searchSchema = {
     observatory_id: ["number", false]
 }
 
+/**
+ * Searches for users based on the provided search parameters.
+ *
+ * @name search
+ * @route {POST} /search
+ *
+ * @param {object} req - The request object containing the search parameters.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if the request body is invalid.
+ * @throws {Error} - Throws an error if there is an error executing the query to retrieve the user data.
+ */
+
 router.post("/search", (req, res) => {
     let search_params = req.body;
 
@@ -65,6 +79,29 @@ router.post("/search", (req, res) => {
         }
     })
 })
+
+//does this appear in push to main?
+router.get("/get_all_users", (req, res) => {
+
+    let query = `SELECT * FROM users`;
+    
+    sql.connect(config, async err => {
+        if (err) {
+            res.status(500).send(err);
+            return false;
+        } else {
+            sql.query(query).then(sql_res => {
+                res.json(sql_res.recordset);
+                return true;
+            }).catch(err => {
+                res.status(500).send(err);
+                return false;
+            })
+        }
+    })
+})
+
+
 const createBodySchema = {
     username: ["string", true],
     password: ['string', true],
@@ -76,6 +113,21 @@ const createBodySchema = {
     email: ["string", true],
     observatory_id: ["number", false]
 }
+
+/**
+ * Creates a new user based on the provided information.
+ *
+ * @name create
+ * @route {POST} /create
+ *
+ * @param {object} req - The request object containing the user information.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if the request body is invalid.
+ * @throws {Error} - Throws an error if there is an error executing the query to add the user data.
+ *
+ */
 
 router.post("/create", (req, res) => {
     let errors = check_body_schema(req.body, createBodySchema);
@@ -130,10 +182,13 @@ router.post("/create", (req, res) => {
                     '${req.body.email}',
                     '${access_token}',
                     ${req.body.observatory_id || null}
-                )`).then(_ => {
+                )`).then(async () => {
+                    let max_id_sql = await sql.query("SELECT MAX(user_id) as 'max' from users");
+                    let max_id = max_id_sql.recordset[0].max;
                     res.status(200).json({
                         username: req.body.username,
                         first_name: req.body.first_name,
+                        user_id: max_id,
                         last_name: req.body.last_name,
                         user_type: req.body.user_type,
                         access_token: access_token,
@@ -150,6 +205,20 @@ router.post("/create", (req, res) => {
         }
     })
 })
+
+/**
+ * Deletes a user based on the provided user ID.
+ *
+ * @name delete
+ * @route {GET} /delete
+ *
+ * @param {object} req - The request object containing the user ID.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if the user ID is not provided or is invalid.
+ * @throws {Error} - Throws an error if there is an error executing the query to delete the user data.
+ */
 
 router.get("/delete", (req, res) => {
     if (!req.query.id) {
@@ -191,6 +260,20 @@ const loginBodySchema = {
     password: ['string', true]
 }
 
+/**
+ * Authenticates a user based on the provided username and password.
+ *
+ * @name login
+ * @route {POST} /login
+ *
+ * @param {object} req - The request object containing the username and password.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if the request body is invalid.
+ * @throws {Error} - Throws an error if the provided credentials are invalid.
+ */
+
 router.post("/login", (req, res) => {
     let errors = check_body_schema(req.body, loginBodySchema);
     if (errors.length > 0){
@@ -204,15 +287,17 @@ router.post("/login", (req, res) => {
             return false;
         }
 
-        sql.query(`SELECT * FROM users WHERE username='${req.body.username}' AND password='${req.body.password}'`).then(sql_res => {
+        sql.query(`SELECT * FROM users WHERE username='${req.body.username}' AND password='${req.body.password}'`).then(async sql_res => {
             if (sql_res.recordset.length > 0){
+                
                 res.status(200).json({
                     username: sql_res.recordset[0].username,
                     first_name: sql_res.recordset[0].first_name,
                     last_name: sql_res.recordset[0].last_name,
                     user_type: sql_res.recordset[0].user_type,
                     access_token: sql_res.recordset[0].access_token,
-                    observatory_id: sql_res.recordset[0].observatory_id
+                    observatory_id: sql_res.recordset[0].observatory_id,
+                    user_id: sql_res.recordset[0].user_id
                 });
                 return true;
             }

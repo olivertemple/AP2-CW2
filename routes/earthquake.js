@@ -31,6 +31,20 @@ const createBodySchema = {
     seismic_wave_type: ["string", true] //P, S, Love, Rayleigh
 }
 
+
+/**
+ * Handles the creation of a new earthquake record.
+ *
+ * @param {object} req - The request object containing the earthquake data.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @returns {boolean} - Returns false if there is an error, true otherwise.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if the observatory with the given observatory_id does not exist.
+ * @throws {Error} - Throws an error if there is an error inserting the earthquake data into the EarthquakeData table.
+ */
+
 router.post("/create", (req, res) => {
     let errors = check_body_schema(req.body, createBodySchema);
     if (errors.length > 0) {
@@ -80,6 +94,20 @@ const searchSchema = {
     magnitude_max: ["number", false],
     magnitude_min: ["number", false]
 }
+
+/**
+ * Handles the search functionality for earthquakes based on provided parameters.
+ *
+ * @param {object} req - The request object containing the search parameters.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @returns {boolean} - Returns false if there is an error, true otherwise.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if the search parameters are invalid.
+ * @throws {Error} - Throws an error if there is an error executing the search query.
+ */
+
 router.post("/search", (req, res) => {
     let search_params = req.body;
 
@@ -173,6 +201,20 @@ const searchRadiusSchema = {
     radius: ["number", true]
 }
 
+
+/**
+ * Handles the search functionality for earthquakes within a specified radius from a given latitude and longitude.
+ *
+ * @param {object} req - The request object containing the search parameters.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @returns {boolean} - Returns false if there is an error, true otherwise.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if the search parameters are invalid.
+ * @throws {Error} - Throws an error if there is an error executing the search query.
+ */
+
 router.post("/search_radius", (req, res) => {
     let search_params = req.body;
 
@@ -214,6 +256,20 @@ const countTypeSchema = {
     start_date: ['string', false],
     end_date: ['string', false]
 }
+
+/**
+ * Handles the count of earthquakes per type between given dates.
+ *
+ * @param {object} req - The request object containing the search parameters.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @returns {boolean} - Returns false if there is an error, true otherwise.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if the search parameters are invalid.
+ * @throws {Error} - Throws an error if there is an error executing the count query.
+ */
+
 router.post("/count_type", (req, res) => {
     let search_params = req.body;
 
@@ -267,6 +323,21 @@ const countWaveSchema = {
     start_date: ['string', false],
     end_date: ['string', false]
 }
+
+
+/**
+ * Handles the count of seismic waves per type between given dates.
+ *
+ * @param {object} req - The request object containing the search parameters.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @returns {boolean} - Returns false if there is an error, true otherwise.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if the search parameters are invalid.
+ * @throws {Error} - Throws an error if there is an error executing the count query.
+ */
+
 router.post("/count_wave", (req, res) => {
     let search_params = req.body;
 
@@ -316,6 +387,18 @@ router.post("/count_wave", (req, res) => {
     })
 })
 
+/**
+ * Retrieves all earthquake records from the EarthquakeData table.
+ *
+ * @name all_earthquakes
+ * @route {GET} /all_earthquakes
+ *
+ * @returns {object} - An array of earthquake records.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if there is an error executing the query.
+ */
+
 router.get("/all_earthquakes", (req, res) => {
     sql.connect(config, async err => {
         if (err) {
@@ -330,6 +413,23 @@ router.get("/all_earthquakes", (req, res) => {
         }
     })
 })
+
+
+/**
+ * Retrieves earthquake records associated with a specific observatory.
+ *
+ * @name observatory
+ * @route {GET} /observatory
+ *
+ * @param {number} id - The ID of the observatory.
+ *
+ * @returns {object} - An array of earthquake records associated with the observatory.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if the observatory ID is not provided or is not numeric.
+ * @throws {Error} - Throws an error if there is an error executing the query.
+ * @throws {Error} - Throws an error if no earthquakes are found associated with the observatory.
+ */
 
 router.get("/observatory", (req, res) => {
     if (!req.query.id) {
@@ -360,6 +460,18 @@ router.get("/observatory", (req, res) => {
         }
     })
 })
+
+/**
+ * Retrieves the count of earthquakes grouped by year from the EarthquakeData table.
+ *
+ * @name earthquakes_per_year
+ * @route {GET} /earthquakes_per_year
+ *
+ * @returns {object} - An array of objects, where each object contains a year and the count of earthquakes that occurred in that year.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if there is an error executing the query.
+ */
 
 router.get("/earthquakes_per_year", (_, res) => {
     sql.connect(config, async err => {
