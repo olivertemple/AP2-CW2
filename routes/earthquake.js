@@ -488,6 +488,20 @@ router.get("/earthquakes_per_year", (_, res) => {
             sql.query("SELECT YEAR(event_date) as 'year' , COUNT(*) as 'count' FROM EarthquakeData GROUP BY YEAR(event_date);").then(sql_res => {
                 let count = sql_res.recordset;
 
+                for (let i = 0; i < count.length - 1; i++){
+                    let item = count[i];
+                    let next_item = count[i+1]
+                    if (item.year != next_item.year - 1){
+                        let diff = next_item.year - item.year;
+                        for (let year = 0; year < diff - 1; year ++){
+                            let new_year = item.year + year + 1;
+                            count.push({year: new_year, count: 0})
+                        }
+                    }
+
+                }
+                count.sort((a,b) => {return a.year - b.year})
+
                 res.status(200).json(count);
 
             }).catch(err => {
