@@ -67,6 +67,10 @@ sql.connect(config, async (err) => {
         logger.error(`Cannot connect to sql server - ${err}`);
     } else {
         const app = express();
+        //Set the limits to be larger to allow photo upload
+        app.use(express.json({limit: '50mb'}));
+        app.use(express.urlencoded({limit: '50mb'}));
+        //Set CORS Headers
         app.use((_, res, next) => {
             res.setHeader("Access-Control-Allow-Origin", "*");
             res.setHeader(
