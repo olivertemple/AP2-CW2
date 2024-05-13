@@ -5,8 +5,9 @@ const sql = require("mssql");
 const dotenv = require('dotenv');
 const { sendMailOrderConfirmation } = require("../utils/email");
 
-
 dotenv.config();
+
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
 var config = {
     "user": process.env.USER, // Database username
@@ -123,6 +124,50 @@ router.post("/add_transaction", (req, res) => {
     })
 })
 
+router.post("/create_stripe_session", async (req, res) => {
+    try {
+        var lineItems = [];
+        const items = req.body;
+        for (let item of items) {
+            lineItems.push({
+                price_data: {
+                    currency: 'eur',
+                    product_data: {
+                        name: item.sample_id,
+                    },
+                    unit_amount_decimal: item.item_value*100,
+                },
+                quantity: 1,
+            })
+        }
+        const session = await stripe.checkout.sessions.create({
+            line_items: lineItems,
+            mode: 'payment',
+            success_url: 'http://localhost:8100/checkout/success?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url: 'http://localhost:8100/checkout',
+        });
+        
+        res.status(200).json({checkoutURL: session.url})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: "Yeah nah you cant pay for this stuff right now... (Why dont you just steal it?)", errors: err});
+        return false;
+    }
+})
+
+router.get('/order_successfull', async (req, res) => {
+    try {
+        const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
+        //const customer = await stripe.customers.retrieve(session.customer);
+        const lineItems = await stripe.checkout.sessions.listLineItems(req.query.session_id)
+
+        res.status(200).json({session: session, line_items: lineItems.data});
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: "Yeah nah cant do that at the minute boss man", errors: err});
+        return false;
+    }
+  });
 
 /**
  * Updates the transaction status to 'collected' in the database.
@@ -137,7 +182,6 @@ router.post("/add_transaction", (req, res) => {
  * @throws {Error} - Throws an error if the order number is not provided in the request query.
  * @throws {Error} - Throws an error if the provided order number is invalid or not found in the database.
  */
-
 router.get("/transaction_collected", (req, res) => {
     if (!req.query.id) {
         res.status(400).json({message: "No ID sent"});
