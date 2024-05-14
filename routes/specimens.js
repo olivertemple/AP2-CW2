@@ -67,7 +67,7 @@ const empty_item_name = ''
  * @throws {HTTPError} If the request body is invalid or if there is an error connecting to the database or Firebase Storage.
  */
 
-router.post("/create", (req, res) => {
+router.post("/create", async (req, res) => {
     
 
     let errors = check_body_schema(req.body, createBodySchema);
@@ -77,8 +77,7 @@ router.post("/create", (req, res) => {
     }
 
     if ("current_location" in req.body){
-        console.log("in request body")
-        let location = req.body.current_location;
+        var location = req.body.current_location;
         const location_format = /^[A-Z]{1}[0-9]{1}$/;
         //|collected|awaiting collection
         let test_var = location_format.test(location)
@@ -86,25 +85,39 @@ router.post("/create", (req, res) => {
             res.status(400).json({message: "Invalid location format", errors: location});
             return false;
         }
+    } else{
+        loopchar:
+            for (i = 65; i <= 90; i++) {
+                letter = String.fromCharCode(i);
+                for (num = 0; num <= 9; num++) {
+                    shelf = letter + String(num)
+                    sql_query = `SELECT COUNT(*) FROM SampleData WHERE current_location = '${shelf}'`
+                    var storage_check = await sql.query(sql_query)
+                    const storage_recordset = storage_check.recordset;
+                    const storage_instances = storage_recordset[0]['']
+                    if (storage_instances >= 10) {
+                        continue
+                    }
+                    else {
+                        location = shelf
+                        break loopchar
+                    }
+                }
+            }
     }
-    else {
-        
-    }
-
 
 
     sql.connect(config, async err => {
         if (err) {
             res.status(500).json({message: "Could not connect to server", errors: err});
-
         } else {
             try{
                 let max_id_sql = await sql.query("SELECT MAX(sample_id) as 'max' from SampleData");
+
                 let max_id = max_id_sql.recordset[0].max + 1;
 
                 let image_ref = storage.ref(imageRef, `${max_id}-${req.body.collection_date}-${req.body.longitude}-${req.body.latitude}`);
                 let snapshot = await storage.uploadString(image_ref, req.body.image_url, 'base64')
-                console.log(snapshot.downloadURL);
                 let image_url = await storage.getDownloadURL(image_ref)
                 sql.query(`INSERT INTO SampleData VALUES (
                     '${req.body.earthquake_id}',
@@ -113,7 +126,7 @@ router.post("/create", (req, res) => {
                     '${req.body.longitude}',
                     '${req.body.latitude}',
                     '${req.body.country}',
-                    '${req.body.current_location}',
+                    '${location}',
                     '${IsSampleRequired}',
                     '${ItemValue}',
                     '${IsSold}',
@@ -202,7 +215,6 @@ const searchSchema = {
 
 router.post("/search", (req, res) => {
     let search_params = req.body;
-    console.log(search_params)
     let new_body = {}
     for (let key in search_params){
         if (search_params[key] != null && search_params[key] != "" || search_params[key] === 0){
@@ -210,7 +222,6 @@ router.post("/search", (req, res) => {
         }
     }
     search_params = new_body;
-    console.log(search_params)
     let errors = check_body_schema(search_params, searchSchema);
     if (errors.length > 0) {
         res.status(400).json({message: "Invalid request body", errors: errors});
@@ -266,7 +277,6 @@ router.post("/search", (req, res) => {
     }
 
     let query = "SELECT * FROM SampleData WHERE " + sql_query.join(' AND ');
-    console.log(query)
     sql.connect(config, async err => {
         if (err) {
             res.status(500).json({message: "Could not connect to server", errors: err});
