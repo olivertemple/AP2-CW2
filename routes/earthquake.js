@@ -67,8 +67,8 @@ router.post("/create", (req, res) => {
                 '${req.body.datetime}',
                 ${req.body.magnitude},
                 '${req.body.country}',
-                ${req.body.latitude},
                 ${req.body.longitude},
+                ${req.body.latitude},
                 ${req.body.observatory_id},
                 '${req.body.earthquake_type}',
                 '${req.body.seismic_wave_type}'
