@@ -43,7 +43,7 @@ const createBodySchema = {
     longitude: ['number', true],
     latitude: ['number', true],
     country: ["string", true],
-    current_location: ["string", true],
+    current_location: ["string", false],
     observations: ["string", true],
     image_url: ["string", true] //base64 encoded image please
 }
@@ -53,7 +53,6 @@ const ItemValue = 0
 const IsSold = false
 const shop_description = ''
 const empty_item_name = ''
-
 
 /**
  * This function handles the POST request to the "/create" endpoint.
@@ -77,15 +76,22 @@ router.post("/create", (req, res) => {
         return false;
     }
 
-    let location = req.body.current_location;
-    const location_format = /^[A-Z]{1}[0-9]{1}$/;
-    //|collected|awaiting collection
-    let test_var = location_format.test(location)
-    console.log(location + "=" + test_var)
-    if (!test_var) {
-        res.status(400).json({message: "Invalid location format", errors: location});
-        return false;
+    if ("current_location" in req.body){
+        console.log("in request body")
+        let location = req.body.current_location;
+        const location_format = /^[A-Z]{1}[0-9]{1}$/;
+        //|collected|awaiting collection
+        let test_var = location_format.test(location)
+        if (!test_var) {
+            res.status(400).json({message: "Invalid location format", errors: location});
+            return false;
+        }
     }
+    else {
+        
+    }
+
+
 
     sql.connect(config, async err => {
         if (err) {
