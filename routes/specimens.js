@@ -43,7 +43,7 @@ const createBodySchema = {
     longitude: ['number', true],
     latitude: ['number', true],
     country: ["string", true],
-    current_location: ["string", false],
+    current_location: ["string", true],
     observations: ["string", true],
     image_url: ["string", true] //base64 encoded image please
 }
@@ -76,7 +76,7 @@ router.post("/create", async (req, res) => {
         return false;
     }
 
-    if ("current_location" in req.body){
+    if (!(req.body.current_location == "")){
         var location = req.body.current_location;
         const location_format = /^[A-Z]{1}[0-9]{1}$/;
         //|collected|awaiting collection
