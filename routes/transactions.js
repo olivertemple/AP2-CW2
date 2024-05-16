@@ -207,7 +207,7 @@ router.get("/transaction_collected", (req, res) => {
         }
 
         try {
-            sql.query(`UPDATE Transactions SET collection_status = 'collected' WHERE order_number = '${order_number}'`)
+            sql.query(`UPDATE Transactions SET collection_status = 'collected', current_location = 'collected' WHERE order_number = '${order_number}'`)
 
             let sql_order = await sql.query(`SELECT * FROM Transactions WHERE order_number = '${order_number}'`);
             let orders = sql_order.recordset;
