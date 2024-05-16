@@ -80,7 +80,6 @@ sql.connect(config, async (err) => {
             res.setHeader("Access-Control-Allow-Methods", "*");
             next();
         });
-        app.use(express.json()); //This parses incoming requests as JSON payloads
         app.use(ruid());
 
         // Log a request for all endpoints

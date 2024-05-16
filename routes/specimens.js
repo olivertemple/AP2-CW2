@@ -5,7 +5,8 @@ const sql = require("mssql");
 const dotenv = require('dotenv');
 var firebase = require("firebase/app");
 var storage = require("firebase/storage");
-const bodyBarser = require('body-parser');
+var database = require("firebase/database")
+
 dotenv.config();
 
 var config = {
@@ -22,15 +23,19 @@ var config = {
 const firebaseConfig = {
     apiKey: "AIzaSyCUZzDn59QybFV3iduWhriy6ziqFuuTrWA",
     authDomain: "seiswatch-b4c2f.firebaseapp.com",
+    databaseURL:
+        "https://seiswatch-b4c2f-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "seiswatch-b4c2f",
     storageBucket: "seiswatch-b4c2f.appspot.com",
     messagingSenderId: "998371569633",
-    appId: "1:998371569633:web:00b1450e94a20dc8f72ca0"
+    appId: "1:998371569633:web:00b1450e94a20dc8f72ca0",
 };
 const app = firebase.initializeApp(firebaseConfig);
 
 const bucket = storage.getStorage();
 const imageRef = storage.ref(bucket, 'images');
+
+const db = database.getDatabase(app);
 
 router.get("/", (req, res) => {
     res.json({endpoint: "specimens"})
@@ -429,7 +434,74 @@ router.post("/add_to_shop", (req, res) =>{
             
         }
     })
+})
 
+router.post("/bulk_add", async (req, res) => {
+    let file_id = req.query.file_id;
+
+    let file_id_ref = database.ref(db, `/${file_id}`);
+    let snapshot = await database.get(file_id_ref);
+    if (!snapshot.exists()){
+        res.status(500).json({message: 'could not find file_id'})
+        return false;
+    }
+    console.log(snapshot)
+    let files = snapshot.val().split(',');
+    let files_to_delete = [];
+    for(let i = 0; i < files.length; i++){
+        let file = files[i];
+        let file_ref = storage.ref(bucket, file);
+        let url_res = await storage.getDownloadURL(file_ref);
+        let file_req = await fetch(url_res);
+        let blob = await file_req.blob();
+        let text = await blob.text();
+        let rows = text.split("\n");
+
+        for (let j = 1; j < rows.length; j++){
+            let row = rows[j].split(",");
+            sql.connect(config, async err => {
+                if (err){
+                    res.status(500).json({message: 'could not connect to server', errors: err})
+                    return false;
+                }
+                console.log(row)
+                let q = `INSERT INTO SampleData Values (
+                    '${row[0]}',
+                    '${row[1]}',
+                    '${row[2]}',
+                    ${row[3]},
+                    ${row[4]},
+                    '${row[5]}',
+                    'processing',
+                    '${IsSampleRequired}',
+                    '${ItemValue}',
+                    '${IsSold}',
+                    '${row[6]}',
+                    '${shop_description}',
+                    '${row[7]}',
+                    '${empty_item_name}'
+                )`
+                sql.query(q).then( _ => {
+                    files_to_delete.push(file_ref)
+                }).catch(err => {
+                    res.status(500).json({message: 'error adding specimens', errors: err})
+                    return false;
+                })
+            })
+        }
+    }
+    database.remove(file_id_ref);
+    
+
+    for (let i=0; i<files_to_delete.length; i++){
+        try{
+            await storage.deleteObject(files_to_delete[i])
+        } catch {
+            null
+        }
+    }
+    res.status(200).json({message: "specimens imported successfully"})
+    return true;
 })
 
 
