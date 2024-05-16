@@ -129,15 +129,21 @@ router.post("/create_stripe_session", async (req, res) => {
         var lineItems = [];
         const items = req.body;
         for (let item of items) {
+            console.log(item)
             lineItems.push({
                 price_data: {
                     currency: 'eur',
-                    product_data: {
-                        name: item.sample_id,
-                    },
                     unit_amount_decimal: item.item_value*100,
+                    product_data: {
+                        name: item.item_name,
+                        description: item.shop_description,
+                        images: [item.image_url],
+                        metadata: {
+                            id: item.sample_id
+                        }
+                    }
                 },
-                quantity: 1,
+                quantity: 1
             })
         }
         const session = await stripe.checkout.sessions.create({
@@ -158,8 +164,7 @@ router.post("/create_stripe_session", async (req, res) => {
 router.get('/order_successfull', async (req, res) => {
     try {
         const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
-        //const customer = await stripe.customers.retrieve(session.customer);
-        const lineItems = await stripe.checkout.sessions.listLineItems(req.query.session_id)
+        const lineItems = await stripe.checkout.sessions.listLineItems(req.query.session_id, {expand: ['data.price.product']})
 
         res.status(200).json({session: session, line_items: lineItems.data});
     } catch (err) {
