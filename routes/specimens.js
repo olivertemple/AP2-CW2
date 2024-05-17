@@ -341,7 +341,12 @@ router.post("/delete", (req, res) => {
 
         } else {
             try{
-
+                let transaction_res = await sql.query(`SELECT * FROM Transactions WHERE sample_id = ${delete_params.sample_id}`)
+                if (transaction_res.recordset[0]?.collection_status == 'waiting for collection'){
+                    res.status(400).json({message:"sample could not be deleted", errors: "sample is awaiting collection"})
+                    return false;
+                }
+                await sql.query(`DELETE FROM Transactions WHERE sample_id = ${delete_params.sample_id}`)
                 sql.query(query
                 ).then(_ => {
                     res.status(200).json({message: "Specimen deleted"});
