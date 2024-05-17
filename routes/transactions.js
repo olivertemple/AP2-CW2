@@ -172,7 +172,7 @@ router.get('/order_successfull', async (req, res) => {
         res.status(500).json({message: "Yeah nah cant do that at the minute boss man", errors: err});
         return false;
     }
-  });
+});
 
 /**
  * Updates the transaction status to 'collected' in the database.
@@ -261,5 +261,42 @@ router.get("/transaction_collected", (req, res) => {
             return false;
         }
     })
+})
+
+
+router.get("/transaction_items", (req, res) => {
+    if (!req.query.id) {
+        res.status(400).json({message: "No ID sent"});
+        return false;
+    }
+
+    if (!parseInt(req.query.id, 10)) {
+        res.status(400).json({message: "Invalid ID"});
+        return false;
+    }
+
+    let order_number = req.query.id;
+    try{
+        sql.connect(config, async err => {
+            if (err){
+                res.status(500).json({message: "could not connect to server"})
+                return false;
+            }
+    
+            let data = await sql.query(`SELECT sample_id FROM Transactions WHERE order_number = ${order_number}`);
+    
+            let samples = [];
+            await Promise.all(data.recordset.map(async item => {
+                let sample = await sql.query(`SELECT * FROM SampleData WHERE sample_id = ${item.sample_id}`);
+                samples.push(sample.recordset[0])
+            }))
+    
+            res.status(200).json(samples);
+        })
+    } catch (err) {
+        res.status(500).json({message: 'could not get samples', errors: err});
+        return false;
+    }
+    
 })
 module.exports = router;
