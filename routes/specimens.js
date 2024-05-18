@@ -383,7 +383,7 @@ router.get("/to_sell", (req, res) => {
         if (err) {
             res.status(500).json({message: "Could not connect to server", errors: err});
         } else {
-            sql.query("SELECT * FROM SampleData WHERE is_sample_required = 0").then(sql_res => {
+            sql.query("SELECT * FROM SampleData WHERE is_sample_required = 0 AND is_sold = 0").then(sql_res => {
                 res.json(sql_res.recordset);
                 return true;
             }).catch(err => {

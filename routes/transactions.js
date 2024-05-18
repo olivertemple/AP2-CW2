@@ -193,7 +193,7 @@ router.get("/transaction_collected", (req, res) => {
         return false;
     }
 
-    if (!parseInt(req.query.id, 10)) {
+    if (isNaN(req.query.id)) {
         res.status(400).json({message: "Invalid ID"});
         return false;
     }
@@ -270,7 +270,8 @@ router.get("/transaction_items", (req, res) => {
         return false;
     }
 
-    if (!parseInt(req.query.id, 10)) {
+    if (isNaN(req.query.id)) {
+        console.log(isNaN(req.query.id))
         res.status(400).json({message: "Invalid ID"});
         return false;
     }
@@ -282,9 +283,7 @@ router.get("/transaction_items", (req, res) => {
                 res.status(500).json({message: "could not connect to server"})
                 return false;
             }
-    
-            let data = await sql.query(`SELECT sample_id FROM Transactions WHERE order_number = ${order_number}`);
-    
+            let data = await sql.query(`SELECT sample_id FROM Transactions WHERE order_number = '${order_number}'`);
             let samples = [];
             await Promise.all(data.recordset.map(async item => {
                 let sample = await sql.query(`SELECT * FROM SampleData WHERE sample_id = ${item.sample_id}`);
