@@ -94,7 +94,7 @@ router.get("/largest_magnitude", (req, res) => {
             res.status(500).json({message: "Could not connect to server", errors: err});
             return false;
         }else{
-            sql.query(`SELECT * from EarthquakeData e WHERE e.magnitude = (SELECT MAX(magnitude) FROM EarthquakeData WHERE observatory_id = ${observatory_id}) `).then(sql_res => {
+            sql.query(`SELECT * from EarthquakeData e WHERE e.magnitude =  COALESCE((SELECT MAX(magnitude) FROM EarthquakeData WHERE observatory_id = ${observatory_id}), 0) `).then(sql_res => {
                 res.json(sql_res.recordset);
                 return true;
             }).catch(err => {
@@ -130,7 +130,7 @@ router.get("/average_magnitude", (req, res) => {
             res.status(500).json({message: "Could not connect to server", errors: err});
             return false;
         }else{
-            sql.query(`SELECT AVG(magnitude) FROM EarthquakeData WHERE observatory_id = ${observatory_id}`).then(sql_res => {
+            sql.query(`SELECT COALESCE(AVG(magnitude), 0) FROM EarthquakeData WHERE observatory_id = ${observatory_id}`).then(sql_res => {
                 res.json({"average_magnitude": sql_res.recordset[0]['']});
                 return true;
             }).catch(err => {
