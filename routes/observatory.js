@@ -49,6 +49,16 @@ router.post("/create", (req, res) => {
         res.status(400).json({message: "Invalid request body", errors: errors});
     }
 
+    if (!(req.body.latitude >= -90 && req.body.latitude <= 90)) {
+        res.status(400).json({message: "invalid latitude"})
+        return false
+    }
+
+    if (!(req.body.longitude >= -180 && req.body.longitude <= 180)) {
+        res.status(400).json({message: "invalid longitude"})
+        return false
+    }
+
     sql.connect(config, async err => {
         if (err){
             res.status(500).json({message: "Could not connect to server", errors: err});
