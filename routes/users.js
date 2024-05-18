@@ -54,10 +54,10 @@ router.post("/search", (req, res) => {
 
     let keys = Object.keys(search_params);
     if (keys.length == 0) {
-        res.status(400).send("Missing search parameter");
+        res.status(400).json({message: "Missing search parameter"});
         return false;
     } else if (keys.length > 1) {
-        res.status(400).send("Only enter one search parameter")
+        res.status(400).json({message: "Only enter one search parameter"})
         return false;
     }
 
@@ -66,14 +66,14 @@ router.post("/search", (req, res) => {
     
     sql.connect(config, async err => {
         if (err) {
-            res.status(500).send(err);
+            res.status(500).json({errors: err});
             return false;
         } else {
             sql.query(query).then(sql_res => {
                 res.json(sql_res.recordset);
                 return true;
             }).catch(err => {
-                res.status(500).send(err);
+                res.status(500).json({errors: err});
                 return false;
             })
         }
@@ -87,14 +87,14 @@ router.get("/get_all_users", (req, res) => {
     
     sql.connect(config, async err => {
         if (err) {
-            res.status(500).send(err);
+            res.status(500).json({errors: err});
             return false;
         } else {
             sql.query(query).then(sql_res => {
                 res.json(sql_res.recordset);
                 return true;
             }).catch(err => {
-                res.status(500).send(err);
+                res.status(500).json({errors: err});
                 return false;
             })
         }
@@ -138,7 +138,7 @@ router.post("/create", (req, res) => {
 
     sql.connect(config, async err => {
         if (err) {
-            res.status(500).send(err);
+            res.status(500).json({errors: err});
             return false;
         } else {
             try{
@@ -150,20 +150,25 @@ router.post("/create", (req, res) => {
                 const email_recordset = email_check.recordset;
                 const email_instances = email_recordset[0]['']
 
+                if (!(req.body.user_type == "senior scientist" || req.body.user_type == "junior scientist" || req.body.user_type == "general" || req.body.user_type == "admin")) {
+                    res.status(403).json({message: "Invalid user type"});
+                    return false;
+                }
+
                 if (username_instances > 0){
-                    res.status(400).send("Username already exists");
+                    res.status(400).json({message: "Username already exists"});
                     return false;
                 }
 
                 if (email_instances > 0) {
-                    res.status(400).send("This email is already being used for another account");
+                    res.status(400).json({message: "This email is already being used for another account"});
                     return false;
                 }
 
                 if (req.body.observatory_id) {
                     let observatory_check = await sql.query(`SELECT COUNT(observatory_id) from ObservatoryData WHERE observatory_id = ${req.body.observatory_id}`);
                     if (observatory_check.recordset[0][''] == 0){
-                        res.status(400).send(`Observatory with id ${req.body.observatory_id} does not exist`)
+                        res.status(400).json({message: `Observatory with id ${req.body.observatory_id} does not exist`})
                         return false;
                     }
                 }
@@ -195,11 +200,11 @@ router.post("/create", (req, res) => {
                         observatory_id: req.body.observatory_id || null});
                     return true;
                 }).catch(err => {
-                    res.status(500).send(`could not add user, ${err}`);
+                    res.status(500).json({message: `could not add user, ${err}`});
                     return false;
                 })
             } catch (err) {
-                res.status(500).send(err);
+                res.status(500).json({errors: err});
             }
             
         }
@@ -222,12 +227,12 @@ router.post("/create", (req, res) => {
 
 router.get("/delete", (req, res) => {
     if (!req.query.id) {
-        res.status(400).send("no id sent");
+        res.status(400).json({message: "no id sent"});
         return false;
     }
 
     if (!parseInt(req.query.id, 10)) {
-        res.status(400).send("invalid id");
+        res.status(400).json({message: "invalid id"});
         return false;
     }
 
@@ -235,21 +240,21 @@ router.get("/delete", (req, res) => {
     
     sql.connect(config, async err => {
         if (err) {
-            res.status(500).send(err);
+            res.status(500).json({errors: err});
             return false;
         }
 
         try {
             let sql_res = await sql.query(`SELECT * FROM users WHERE user_id = ${user_id}`);
             if (!sql_res.recordset.length) {
-                res.status(400).send(`user with id ${user_id} does not exist`)
+                res.status(400).json({message: `user with id ${user_id} does not exist`})
                 return false
             }
             sql.query(`DELETE FROM users WHERE user_id = ${user_id}`)
-            res.status(200).send(`user ${user_id} deleted`)
+            res.status(200).json({message: `user ${user_id} deleted`})
 
         } catch (err) {
-            res.status(500).send(err);
+            res.status(500).json({errors: err});
             return false;
         }
     })
@@ -283,7 +288,7 @@ router.post("/login", (req, res) => {
 
     sql.connect(config, async err => {
         if (err) {
-            res.status(500).send(err);
+            res.status(500).json({errors: err});
             return false;
         }
 
@@ -302,10 +307,10 @@ router.post("/login", (req, res) => {
                 return true;
             }
 
-            res.status(401).send("invalid credentials")
+            res.status(401).json({message: "Invalid credentials"})
             return false;
         }).catch(err => {
-            res.status(500).send(err);
+            res.status(500).json({errors: err});
             return false;
         })
         
