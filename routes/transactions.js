@@ -95,7 +95,7 @@ router.post("/add_transaction", (req, res) => {
                     item_value: sample.item_value,
                     observations: sample.observations,
                     shop_description: sample.shop_description,
-                    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTe3hKH5U9hzPmkWe9XwVn1Kx0UGI4a54UFk7GYM3x4w&s"
+                    image: sample.image_url
                 };
 
                 order_items.push(item);
@@ -207,7 +207,7 @@ router.get("/transaction_collected", (req, res) => {
         }
 
         try {
-            sql.query(`UPDATE Transactions SET collection_status = 'collected', current_location = 'collected' WHERE order_number = '${order_number}'`)
+            sql.query(`UPDATE Transactions SET collection_status = 'collected' WHERE order_number = '${order_number}'`)
 
             let sql_order = await sql.query(`SELECT * FROM Transactions WHERE order_number = '${order_number}'`);
             let orders = sql_order.recordset;
@@ -216,7 +216,8 @@ router.get("/transaction_collected", (req, res) => {
 
             for (let i in orders){
                 let order = orders[i];
-
+                await sql.query(`UPDATE SampleData SET current_location = 'collected' WHERE sample_id = '${order.sample_id}'`)
+                
                 let sample_req = await sql.query(`SELECT * FROM SampleData WHERE sample_id = ${order.sample_id}`)
                 let sample = sample_req.recordset[0];
 
@@ -234,7 +235,7 @@ router.get("/transaction_collected", (req, res) => {
                     item_value: sample.item_value,
                     observations: sample.observations,
                     shop_description: sample.shop_description,
-                    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTe3hKH5U9hzPmkWe9XwVn1Kx0UGI4a54UFk7GYM3x4w&s"
+                    image: sample.image_url
                 };
         
                 order_items.push(item);
