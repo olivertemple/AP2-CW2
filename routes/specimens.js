@@ -233,6 +233,16 @@ router.post("/search", (req, res) => {
         return false;
     }
 
+    if (!(req.body.latitude >= -90 && req.body.latitude <= 90)) {
+        res.status(400).json({message: "invalid latitude"})
+        return false
+    }
+
+    if (!(req.body.longitude >= -180 && req.body.longitude <= 180)) {
+        res.status(400).json({message: "invalid longitude"})
+        return false
+    }
+
     let sql_query = [];
     let keys = Object.keys(search_params);
 
