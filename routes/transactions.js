@@ -100,21 +100,21 @@ router.post("/add_transaction", (req, res) => {
 
                 order_items.push(item);
             }
-            let email_req = await sql.query(`SELECT email, username FROM users WHERE user_id = ${req.body.buyer_id}`);
+            let email_req = await sql.query(`SELECT email, first_name FROM users WHERE user_id = ${req.body.buyer_id}`);
             let email = email_req.recordset[0].email;
-            let username = email_req.recordset[0].username;
+            let first_name = email_req.recordset[0].first_name;
 
 
             sendMailOrderConfirmation(
                 email,
-                username,
+                first_name,
                 order_number,
                 order_items,
                 'confirmation',
                 req.body.date_of_purchase
             )
 
-            res.status(200).json({message: "Succes", errors: err});
+            res.status(200).json({message: "Success", errors: err});
             return true;
         } catch (err) {
             console.log(err)
@@ -241,13 +241,13 @@ router.get("/transaction_collected", (req, res) => {
                 order_items.push(item);
             }
 
-            let email_req = await sql.query(`SELECT email, username FROM users WHERE user_id = ${orders[0].buyer_id}`);
+            let email_req = await sql.query(`SELECT email, first_name FROM users WHERE user_id = ${orders[0].buyer_id}`);
             let email = email_req.recordset[0].email;
-            let username = email_req.recordset[0].username;
+            let first_name = email_req.recordset[0].first_name;
 
             sendMailOrderConfirmation(
                 email,
-                username,
+                first_name,
                 order_number,
                 order_items,
                 'collection',

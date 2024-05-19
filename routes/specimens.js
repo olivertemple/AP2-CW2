@@ -117,6 +117,12 @@ router.post("/create", async (req, res) => {
             res.status(500).json({message: "Could not connect to server", errors: err});
         } else {
             try{
+                let check = await sql.query(`SELECT * FROM EarthquakeData WHERE id = ${req.body.earthquake_id}`);
+                if (check.recordset.length == 0){
+                    res.status(400).json({message: "Earthquake does not exist"});
+                    return false;
+                }
+                
                 let max_id_sql = await sql.query("SELECT MAX(sample_id) as 'max' from SampleData");
 
                 let max_id = max_id_sql.recordset[0].max + 1;
