@@ -74,7 +74,9 @@ const empty_item_name = ''
 
 router.post("/create", async (req, res) => {
     
-
+    if(req.body?.current_location == null){
+        req.body.current_location = ""
+    }
     let errors = check_body_schema(req.body, createBodySchema);
     if (errors.length > 0) {
         res.status(400).json({message: "Invalid request body", errors: errors});
@@ -146,7 +148,7 @@ router.post("/create", async (req, res) => {
                     '${image_url}',
                     '${empty_item_name}'
                 )`).then(async _ => {
-                    res.status(200).json({message: `Sample successfully created, please store it on shelf ${location}`});
+                    res.status(200).json({message: `please store it on shelf ${location}`});
                     return true;
                 }).catch(err => {
                     res.status(500).json({message: "Could not add specimen", errors: err});
