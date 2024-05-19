@@ -207,6 +207,11 @@ router.get("/transaction_collected", (req, res) => {
         }
 
         try {
+            let test = await sql.query(`SELECT * FROM Transactions WHERE order_number = '${order_number}'`);
+            if (test.recordset.length == 0){
+                res.status(400).json({message: "order number does not exist"});
+                return false;
+            }
             sql.query(`UPDATE Transactions SET collection_status = 'collected' WHERE order_number = '${order_number}'`)
 
             let sql_order = await sql.query(`SELECT * FROM Transactions WHERE order_number = '${order_number}'`);
