@@ -69,6 +69,9 @@ router.post("/create", (req, res) => {
             return false;
         } else {
 
+            //console.log("request")
+            //console.log(req.body)
+
             let ISO_date = new Date(req.body.datetime).toISOString();
             //console.log(ISO_date)
 
@@ -106,7 +109,12 @@ router.post("/create", (req, res) => {
 
             sql_query = `SELECT id FROM EarthquakeData WHERE event_date = '${(ISO_date)}' AND longitude=${req.body.longitude} AND latitude = ${req.body.latitude}`
             //console.log(sql_query)
+
+
             let earthq_id = await sql.query(sql_query)
+            //console.log(earthq_id.recordset)
+
+            //console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             //console.log(earthq_id.recordset)
 
             num_id = String(earthq_id.recordset[0].id).padStart(5, '0')
