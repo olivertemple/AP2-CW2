@@ -4,6 +4,7 @@ const router = express.Router();
 const sql = require("mssql");
 const dotenv = require('dotenv');
 const bcrypt = require('bcrypt');
+const { update } = require("firebase/database");
 dotenv.config();
 
 var config = {
@@ -67,10 +68,20 @@ router.post("/create", (req, res) => {
             res.status(500).json({message: "Could not connect to server", errors: err});
             return false;
         } else {
+
+            let ISO_date = new Date(req.body.datetime).toISOString();
+            //console.log(ISO_date)
+
             let observatory_exists = await sql.query(`SELECT COUNT(*) as 'count' FROM ObservatoryData WHERE observatory_id = ${req.body.observatory_id}`)
             if (!observatory_exists.recordset[0].count){
                 res.status(400).json({message: `Observatory with id ${req.body.observatory_id} does not exist`})
                 return false;
+            }
+            let earthquake_already_exists = await sql.query(`SELECT COUNT(*) as 'count' FROM EarthquakeData WHERE longitude = ${req.body.longitude} AND latitude = ${req.body.latitude} AND event_date = '${ISO_date}'`)
+
+            if (earthquake_already_exists.recordset[0].count) {
+                res.status(400).json({message: "That earthquake is already in the database"})
+                return false
             }
 
             sql.query(`INSERT INTO EarthquakeData VALUES (
@@ -91,17 +102,14 @@ router.post("/create", (req, res) => {
                 res.status(500).json({message: "Could not add earthquake", errors: err});
                 return false;
             })
-            
-            let ISO_date = new Date(req.body.datetime);
-            //console.log(ISO_date)
+        
 
-            sql_query = `SELECT id FROM EarthquakeData WHERE event_date = '${(ISO_date.toISOString())}' AND longitude=${req.body.longitude} AND latitude = ${req.body.latitude}`
+            sql_query = `SELECT id FROM EarthquakeData WHERE event_date = '${(ISO_date)}' AND longitude=${req.body.longitude} AND latitude = ${req.body.latitude}`
             //console.log(sql_query)
             let earthq_id = await sql.query(sql_query)
             //console.log(earthq_id.recordset)
 
             num_id = String(earthq_id.recordset[0].id).padStart(5, '0')
-            console.log(num_id)
 
             id_letter = req.body.earthquake_type[0].toUpperCase()
 
