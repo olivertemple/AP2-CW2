@@ -95,7 +95,7 @@ router.post("/create", async (req, res) => {
             for (i = 65; i <= 90; i++) {
                 letter = String.fromCharCode(i);
                 for (num = 0; num <= 9; num++) {
-                    shelf = letter + String(num)
+                    shelf = letter + String(num);
                     sql_query = `SELECT COUNT(*) FROM SampleData WHERE current_location = '${shelf}'`
                     var storage_check = await sql.query(sql_query)
                     const storage_recordset = storage_check.recordset;
@@ -146,7 +146,7 @@ router.post("/create", async (req, res) => {
                     '${image_url}',
                     '${empty_item_name}'
                 )`).then(async _ => {
-                    res.status(200).json({message:"Specimen added"});
+                    res.status(200).json({message: `Sample successfully created, please store it on shelf ${location}`});
                     return true;
                 }).catch(err => {
                     res.status(500).json({message: "Could not add specimen", errors: err});
