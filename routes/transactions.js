@@ -95,26 +95,26 @@ router.post("/add_transaction", (req, res) => {
                     item_value: sample.item_value,
                     observations: sample.observations,
                     shop_description: sample.shop_description,
-                    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTe3hKH5U9hzPmkWe9XwVn1Kx0UGI4a54UFk7GYM3x4w&s"
+                    image: sample.image_url
                 };
 
                 order_items.push(item);
             }
-            let email_req = await sql.query(`SELECT email, username FROM users WHERE user_id = ${req.body.buyer_id}`);
+            let email_req = await sql.query(`SELECT email, first_name FROM users WHERE user_id = ${req.body.buyer_id}`);
             let email = email_req.recordset[0].email;
-            let username = email_req.recordset[0].username;
+            let first_name = email_req.recordset[0].first_name;
 
 
             sendMailOrderConfirmation(
                 email,
-                username,
+                first_name,
                 order_number,
                 order_items,
                 'confirmation',
                 req.body.date_of_purchase
             )
 
-            res.status(200).json({message: "Succes", errors: err});
+            res.status(200).json({message: "Success", errors: err});
             return true;
         } catch (err) {
             console.log(err)
@@ -216,7 +216,8 @@ router.get("/transaction_collected", (req, res) => {
 
             for (let i in orders){
                 let order = orders[i];
-
+                await sql.query(`UPDATE SampleData SET current_location = 'collected' WHERE sample_id = '${order.sample_id}'`)
+                
                 let sample_req = await sql.query(`SELECT * FROM SampleData WHERE sample_id = ${order.sample_id}`)
                 let sample = sample_req.recordset[0];
 
@@ -234,19 +235,19 @@ router.get("/transaction_collected", (req, res) => {
                     item_value: sample.item_value,
                     observations: sample.observations,
                     shop_description: sample.shop_description,
-                    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTe3hKH5U9hzPmkWe9XwVn1Kx0UGI4a54UFk7GYM3x4w&s"
+                    image: sample.image_url
                 };
         
                 order_items.push(item);
             }
 
-            let email_req = await sql.query(`SELECT email, username FROM users WHERE user_id = ${orders[0].buyer_id}`);
+            let email_req = await sql.query(`SELECT email, first_name FROM users WHERE user_id = ${orders[0].buyer_id}`);
             let email = email_req.recordset[0].email;
-            let username = email_req.recordset[0].username;
+            let first_name = email_req.recordset[0].first_name;
 
             sendMailOrderConfirmation(
                 email,
-                username,
+                first_name,
                 order_number,
                 order_items,
                 'collection',
