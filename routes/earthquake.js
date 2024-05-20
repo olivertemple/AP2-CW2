@@ -68,21 +68,19 @@ router.post("/create", (req, res) => {
             res.status(500).json({message: "Could not connect to server", errors: err});
             return false;
         } else {
-
-            let ISO_date = new Date(req.body.datetime).toISOString();
-            //console.log(ISO_date)
-
             let observatory_exists = await sql.query(`SELECT COUNT(*) as 'count' FROM ObservatoryData WHERE observatory_id = ${req.body.observatory_id}`)
             if (!observatory_exists.recordset[0].count){
                 res.status(400).json({message: `Observatory with id ${req.body.observatory_id} does not exist`})
                 return false;
             }
-            let earthquake_already_exists = await sql.query(`SELECT COUNT(*) as 'count' FROM EarthquakeData WHERE longitude = ${req.body.longitude} AND latitude = ${req.body.latitude} AND event_date = '${ISO_date}'`)
 
-            if (earthquake_already_exists.recordset[0].count) {
-                res.status(400).json({message: "That earthquake is already in the database"})
-                return false
-            }
+
+            let max_id_req = await sql.query(`SELECT MAX(id) as 'count' FROM EarthquakeData`);
+            let max_id = max_id_req.recordset[0].count + 1;
+
+            num_id = String(max_id).padStart(5, '0')
+            id_letter = req.body.earthquake_type[0].toUpperCase()
+            name_id = "E" + id_letter + "-" + String(req.body.magnitude) + "-" + req.body.country + "-" + num_id;
 
             sql.query(`INSERT INTO EarthquakeData VALUES (
                 '${req.body.datetime}',
@@ -93,7 +91,7 @@ router.post("/create", (req, res) => {
                 ${req.body.observatory_id},
                 '${req.body.earthquake_type}',
                 '${req.body.seismic_wave_type}',
-                ${null}
+                '${name_id}'
             )`).then(_ => {
                 res.status(200).json({message: "Earthquake added"});
 
@@ -104,20 +102,7 @@ router.post("/create", (req, res) => {
             })
         
 
-            sql_query = `SELECT id FROM EarthquakeData WHERE event_date = '${(ISO_date)}' AND longitude=${req.body.longitude} AND latitude = ${req.body.latitude}`
-            //console.log(sql_query)
-            let earthq_id = await sql.query(sql_query)
-            //console.log(earthq_id.recordset)
-
-            num_id = String(earthq_id.recordset[0].id).padStart(5, '0')
-
-            id_letter = req.body.earthquake_type[0].toUpperCase()
-
-            name_id = "E" + id_letter + "-" + String(req.body.magnitude) + "-" + req.body.country + "-" + num_id
-
-            update_query = `UPDATE EarthquakeData SET earthquake_name_id = '${name_id}' WHERE id = ${earthq_id.recordset[0].id}`
             
-            sql.query(update_query)
         }
     })
 })
