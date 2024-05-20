@@ -511,6 +511,25 @@ router.post("/bulk_add", async (req, res) => {
                 errors.push(`Earthquake ${row[0]} does not exist`);
             }else {
                 let earthquake_name_id = (await sql.query(`SELECT earthquake_name_id FROM EarthquakeData WHERE id = ${row[0]}`)).recordset[0].earthquake_name_id;
+                let location = 'processing';
+                loopchar:
+                for (i = 65; i <= 90; i++) {
+                    letter = String.fromCharCode(i);
+                    for (num = 0; num <= 9; num++) {
+                        shelf = letter + String(num);
+                        sql_query = `SELECT COUNT(*) FROM SampleData WHERE current_location = '${shelf}'`
+                        var storage_check = await sql.query(sql_query)
+                        const storage_recordset = storage_check.recordset;
+                        const storage_instances = storage_recordset[0]['']
+                        if (storage_instances >= 10) {
+                            continue
+                        }
+                        else {
+                            location = shelf
+                            break loopchar
+                        }
+                    }
+            }
                 let q = `INSERT INTO SampleData Values (
                     '${row[0]}',
                     '${row[1]}',
@@ -518,7 +537,7 @@ router.post("/bulk_add", async (req, res) => {
                     ${row[3]},
                     ${row[4]},
                     '${row[5]}',
-                    'processing',
+                    '${location}',
                     '${IsSampleRequired}',
                     '${ItemValue}',
                     '${IsSold}',
