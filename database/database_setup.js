@@ -22,13 +22,14 @@ let earthquakeTable = "CREATE TABLE EarthquakeData ( \
     latitude FLOAT NOT NULL, \
     observatory_id INT FOREIGN KEY REFERENCES ObservatoryData(observatory_id) NOT NULL, \
     earthquake_type VARCHAR(50) CHECK (earthquake_type IN ('tectonic', 'collapse', 'explosion', 'volcanic')) NOT NULL, \
-    seismic_wave_type VARCHAR(50) CHECK (seismic_wave_type IN ('p', 's', 'love', 'rayleigh')) NOT NULL \
+    seismic_wave_type VARCHAR(50) CHECK (seismic_wave_type IN ('p', 's', 'love', 'rayleigh')) NOT NULL, \
+    earthquake_name_id VARCHAR(MAX) \
 );"
 
 let usersTable = "CREATE TABLE users ( \
     user_id INT IDENTITY PRIMARY KEY NOT NULL, \
     username VARCHAR(25) NOT NULL, \
-    password VARCHAR(30) NOT NULL, \
+    password VARCHAR(100) NOT NULL, \
     first_name VARCHAR(50) NOT NULL, \
     last_name VARCHAR(50) NOT NULL, \
     address VARCHAR(100) NOT NULL, \
@@ -58,18 +59,23 @@ let sampleTable = "CREATE TABLE SampleData ( \
     country VARCHAR(100) NOT NULL, \
     current_location VARCHAR(100) NOT NULL, \
     is_sample_required BIT NOT NULL, \
-    item_value NUMERIC(10, 2) NOT NULL, \
+    item_value float NOT NULL, \
     is_sold BIT NOT NULL, \
-    observations TEXT NOT NULL \
+    observations TEXT NOT NULL, \
+    shop_description TEXT, \
+    image_url TEXT, \
+    item_name TEXT, \
+    earthq_name_id TEXT \
 );"
 
 let transactionTable = "CREATE TABLE Transactions ( \
     transaction_id INT IDENTITY PRIMARY KEY NOT NULL, \
-    buyer_id INT FOREIGN KEY REFERENCES users(user_id) NOT NULL, \
+    buyer_id INT FOREIGN KEY REFERENCES users(user_id), \
     value FLOAT NOT NULL, \
     date_of_purchase DATETIME NOT NULL, \
-    collection_status VARCHAR(10) NOT NULL, \
-    sample_id INT FOREIGN KEY REFERENCES sampleData(sample_id) NOT NULL \
+    collection_status VARCHAR(100) NOT NULL, \
+    sample_id INT FOREIGN KEY REFERENCES sampleData(sample_id) NOT NULL, \
+    order_number VARCHAR(100) NOT NULL\
 );"
 
 

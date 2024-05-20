@@ -146,13 +146,13 @@ router.post("/create_stripe_session", async (req, res) => {
                 quantity: 1
             })
         }
-        let url = req.get('Host')
+        let url = req.headers.referer
 
         const session = await stripe.checkout.sessions.create({
             line_items: lineItems,
             mode: 'payment',
-            success_url: `http://${url}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `http://${url}/checkout`,
+            success_url: `${url}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${url}/checkout`,
         });
         
         res.status(200).json({checkoutURL: session.url})
