@@ -48,7 +48,7 @@ const createBodySchema = {
     longitude: ['number', true],
     latitude: ['number', true],
     country: ["string", true],
-    current_location: ["string", true],
+    current_location: ["string", false],
     observations: ["string", true],
     image: ["string", true] //base64 encoded image please
 }
@@ -122,6 +122,9 @@ router.post("/create", async (req, res) => {
                     res.status(400).json({message: "Earthquake does not exist"});
                     return false;
                 }
+
+                earthq_name_id = check.recordset[0].earthquake_name_id
+                //console.log(earthq_name_id)
                 
                 let max_id_sql = await sql.query("SELECT MAX(sample_id) as 'max' from SampleData");
 
@@ -144,7 +147,8 @@ router.post("/create", async (req, res) => {
                     '${req.body.observations}',
                     '${shop_description}',
                     '${image_url}',
-                    '${empty_item_name}'
+                    '${empty_item_name}',
+                    '${earthq_name_id}'
                 )`).then(async _ => {
                     res.status(200).json({message:"Specimen added"});
                     return true;
@@ -482,7 +486,6 @@ router.post("/bulk_add", async (req, res) => {
         res.status(500).json({message: 'could not find file_id'})
         return false;
     }
-    console.log(snapshot)
     let files = snapshot.val().split(',');
     let files_to_delete = [];
     for(let i = 0; i < files.length; i++){
@@ -501,7 +504,7 @@ router.post("/bulk_add", async (req, res) => {
                     res.status(500).json({message: 'could not connect to server', errors: err})
                     return false;
                 }
-                console.log(row)
+                //console.log(row)
                 let q = `INSERT INTO SampleData Values (
                     '${row[0]}',
                     '${row[1]}',
