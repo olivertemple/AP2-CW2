@@ -478,6 +478,20 @@ router.post("/add_to_shop", (req, res) =>{
     })
 })
 
+/**
+ * This function handles the POST request to the "/bulk_add" endpoint.
+ * It allows for the bulk addition of specimens to the database by uploading a CSV file.
+ * The CSV file should contain the following columns: earthquake_id, collection_date, sample_type, longitude, latitude, country, observations, image_url.
+ * The function reads the CSV file, validates the data, and adds the specimens to the database.
+ *
+ * @param {Request} req - The request object representing the HTTP request.
+ * @param {Response} res - The response object representing the HTTP response.
+ *
+ * @returns {void} This function does not return any value.
+ *
+ * @throws {HTTPError} If there is an error connecting to the database or if the CSV file is invalid.
+ */
+
 router.post("/bulk_add", async (req, res) => {
     let file_id = req.query.file_id;
 

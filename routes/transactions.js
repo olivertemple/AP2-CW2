@@ -271,7 +271,20 @@ router.get("/transaction_collected", (req, res) => {
     })
 })
 
-
+/**
+ * Given an order number, this endpoint retrieves all the items in that order.
+ *
+ * @name transaction_items
+ * @route {GET} /transaction_items
+ *
+ * @param {object} req - The request object containing the order number.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @throws {Error} - Throws an error if there is no ID in the request
+ * @throws {Error} - Throws an error if the ID provided is not valid
+ * @throws {Error} - Throws an error if there is an error connecting to the server.
+ * @throws {Error} - Throws an error if there is an error with the SQL query.
+ */
 router.get("/transaction_items", (req, res) => {
     if (!req.query.id) {
         res.status(400).json({message: "No ID sent"});

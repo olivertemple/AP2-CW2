@@ -80,7 +80,20 @@ router.post("/search", (req, res) => {
     })
 })
 
-//does this appear in push to main?
+/**
+ * Returns all users in the database.
+ *
+ * @name search
+ * @route {POST} /search
+ *
+ * @param {object} req - The request object containing the search parameters.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if there is an error executing the query to retrieve the user data.
+ */
+
+
 router.get("/get_all_users", (req, res) => {
 
     let query = `SELECT * FROM users`;
@@ -135,7 +148,7 @@ router.post("/create", (req, res) => {
         res.status(400).json({message: "Invalid request body", errors: errors});
         return false;
     }
-    
+
     if (req.body.date_of_birth == "") {
         res.status(400).json({message: "Date of birth not entered"})
         return false
@@ -177,6 +190,7 @@ router.post("/create", (req, res) => {
                         return false;
                     }
                 }
+                
                 
                 let salt = bcrypt.genSaltSync(10);
                 let access_token = bcrypt.hashSync(req.body.username, salt).substring(0, 30);
