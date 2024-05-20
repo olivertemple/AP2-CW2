@@ -183,14 +183,14 @@ router.get("/get_all_specimens", (req, res) => {
     sql.connect(config, async err => {
         if (err) {
             res.status(500).json({message: "Could not connect to server", errors: err});
+            return false;
 
         } else {
             sql.query("SELECT * FROM SampleData").then(sql_res => {
-                res.json(sql_res.recordset);
+                res.status(200).json(sql_res.recordset);
                 return true;
             }).catch(err => {
                 res.status(500).json({message: "Could not retrieve specimens", errors: err});
-
                 return false;
             })
         }
@@ -481,12 +481,14 @@ router.post("/bulk_add", async (req, res) => {
     let file_id_ref = database.ref(db, `/${file_id}`);
     let snapshot = await database.get(file_id_ref);
     if (!snapshot.exists()){
-        res.status(500).json({message: 'could not find file_id'})
+        res.status(500).json({message: 'could not find bulk import id'})
         return false;
     }
-    console.log(snapshot)
     let files = snapshot.val().split(',');
-    let files_to_delete = [];
+    let errors = [];
+    let samples = [];
+    let fatal_errors = [];
+
     for(let i = 0; i < files.length; i++){
         let file = files[i];
         let file_ref = storage.ref(bucket, file);
@@ -495,15 +497,16 @@ router.post("/bulk_add", async (req, res) => {
         let blob = await file_req.blob();
         let text = await blob.text();
         let rows = text.split("\n");
-
+    
         for (let j = 1; j < rows.length; j++){
             let row = rows[j].split(",");
-            sql.connect(config, async err => {
-                if (err){
-                    res.status(500).json({message: 'could not connect to server', errors: err})
-                    return false;
-                }
-                console.log(row)
+            await sql.connect(config);
+
+            let earthquake_check = await sql.query(`SELECT id FROM EarthquakeData WHERE id = ${row[0]} `);
+            if (earthquake_check.recordset.length == 0){
+                errors.push(`Earthquake ${row[0]} does not exist`);
+            }else {
+                let earthquake_name_id = (await sql.query(`SELECT earthquake_name_id FROM EarthquakeData WHERE id = ${row[0]}`)).recordset[0].earthquake_name_id;
                 let q = `INSERT INTO SampleData Values (
                     '${row[0]}',
                     '${row[1]}',
@@ -518,29 +521,34 @@ router.post("/bulk_add", async (req, res) => {
                     '${row[6]}',
                     '${shop_description}',
                     '${row[7]}',
-                    '${empty_item_name}'
+                    '${empty_item_name}',
+                    '${earthquake_name_id}'
                 )`
-                sql.query(q).then( _ => {
-                    files_to_delete.push(file_ref)
+
+                await sql.query(q).then( async _ => {
+                    let sample_req = await sql.query(`SElECT * FROM SampleData WHERE sample_id = (SELECT MAX(sample_id) FROM SampleData)`);
+                    let sample = sample_req.recordset[0];
+                    samples.push(sample);
+                    await storage.deleteObject(file_ref)
                 }).catch(err => {
-                    res.status(500).json({message: 'error adding specimens', errors: err})
-                    return false;
+                    fatal_errors.push({message: 'error adding specimens', errors: err})
                 })
-            })
+            }
         }
     }
     database.remove(file_id_ref);
-    
 
-    for (let i=0; i<files_to_delete.length; i++){
-        try{
-            await storage.deleteObject(files_to_delete[i])
-        } catch {
-            null
-        }
+    if (fatal_errors.length > 0){
+        res.status(500).json({message: 'error adding samples', errors: fatal_errors});
+        return false;
     }
-    res.status(200).json({message: "specimens imported successfully"})
+    if (errors.length > 0 ){
+        res.status(400).json({message: errors.join(', ')});
+        return false;
+    }
+    res.status(200).json({message: "specimens imported successfully", samples: samples})
     return true;
+
 })
 
 
