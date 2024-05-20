@@ -27,6 +27,8 @@ AP2-Cw2
 │
 └─── utils - global methods to reduce repetition
 │
+└─── email_service - contains the AWS lambda function for sending emails to users (Dyson firewall block this)
+│
 └─── logs - logs from the backend server
 |
 └─── frontend_build
