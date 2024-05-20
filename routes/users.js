@@ -135,6 +135,11 @@ router.post("/create", (req, res) => {
         res.status(400).json({message: "Invalid request body", errors: errors});
         return false;
     }
+    
+    if (req.body.date_of_birth == "") {
+        res.status(400).json({message: "Date of birth not entered"})
+        return false
+    }
 
     sql.connect(config, async err => {
         if (err) {
