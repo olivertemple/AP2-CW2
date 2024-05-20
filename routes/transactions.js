@@ -124,6 +124,19 @@ router.post("/add_transaction", (req, res) => {
     })
 })
 
+/**
+ * Creates a Stripe checkout session for the provided items.
+ *
+ * @name create_stripe_session
+ * @route {POST} /create_stripe_session
+ *
+ * @param {object} req - The request object containing the items to be purchased.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @throws {Error} - Throws an error if there is a database connection error.
+ * @throws {Error} - Throws an error if the request body is invalid.
+ * @throws {Error} - Throws an error if the provided items are not found in the database.
+ */
 router.post("/create_stripe_session", async (req, res) => {
     try {
         var lineItems = [];
@@ -163,6 +176,20 @@ router.post("/create_stripe_session", async (req, res) => {
     }
 })
 
+/**
+ * Retrieves the Stripe checkout session details and line items for a successful order.
+ *
+ * @name order_successfull
+ * @route {GET} /order_successfull
+ *
+ * @param {object} req - The request object containing the session ID.
+ * @param {object} res - The response object to send back to the client.
+ *
+ * @throws {Error} - Throws an error if there is no session ID in the request.
+ * @throws {Error} - Throws an error if the session ID provided is not valid.
+ * @throws {Error} - Throws an error if there is an error connecting to the server.
+ * @throws {Error} - Throws an error if there is an error with the Stripe API.
+ */
 router.get('/order_successfull', async (req, res) => {
     try {
         const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
