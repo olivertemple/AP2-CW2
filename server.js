@@ -110,9 +110,16 @@ sql.connect(config, async (err) => {
         });
 
         //If there is no build in the ./frontend_build/ folder then this won't work. You can download the latest stable build from github
-        app.use(
-            express.static(path.resolve(__dirname, "./frontend_build/www"))
-        ); //This is to serve the ionic page
+        app.use('/', express.static(path.resolve(__dirname, "./frontend_build/www"))); //This is to serve the ionic page
+        app.use('/home', express.static(path.resolve(__dirname, "./frontend_build/www"))); //This is to serve the ionic page
+        app.use('/earthquakes', express.static(path.resolve(__dirname, "./frontend_build/www"))); //This is to serve the ionic page
+        app.use('/observatories', express.static(path.resolve(__dirname, "./frontend_build/www"))); //This is to serve the ionic page
+        app.use('/map', express.static(path.resolve(__dirname, "./frontend_build/www"))); //This is to serve the ionic page
+        app.use('/samples', express.static(path.resolve(__dirname, "./frontend_build/www"))); //This is to serve the ionic page
+        app.use('/shop', express.static(path.resolve(__dirname, "./frontend_build/www"))); //This is to serve the ionic page
+        app.use('/admin', express.static(path.resolve(__dirname, "./frontend_build/www"))); //This is to serve the ionic page
+        app.use('/checkout', express.static(path.resolve(__dirname, "./frontend_build/www"))); //This is to serve the ionic page
+        app.use('/checkout/success', express.static(path.resolve(__dirname, "./frontend_build/www"))); //This is to serve the ionic page
 
         app.use("/api/earthquake", earthquakeRoutes);
         app.use("/api/observatory", observatoryRoutes);

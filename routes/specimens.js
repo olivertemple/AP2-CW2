@@ -400,7 +400,6 @@ router.post("/delete", (req, res) => {
  */
 
 router.get("/to_sell", (req, res) => {
-    
     sql.connect(config, async err => {
         if (err) {
             res.status(500).json({message: "Could not connect to server", errors: err});
