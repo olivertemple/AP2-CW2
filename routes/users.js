@@ -245,6 +245,7 @@ router.get("/delete", (req, res) => {
         }
 
         try {
+            await sql.query(`UPDATE Transactions SET buyer_id = ${null} FROM Transactions WHERE buyer_id = ${user_id}`);
             let sql_res = await sql.query(`SELECT * FROM users WHERE user_id = ${user_id}`);
             if (!sql_res.recordset.length) {
                 res.status(400).json({message: `user with id ${user_id} does not exist`})
