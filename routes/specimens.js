@@ -48,7 +48,7 @@ const createBodySchema = {
     longitude: ['number', true],
     latitude: ['number', true],
     country: ["string", true],
-    current_location: ["string", true],
+    current_location: ["string", false],
     observations: ["string", true],
     image: ["string", true] //base64 encoded image please
 }
@@ -124,6 +124,9 @@ router.post("/create", async (req, res) => {
                     res.status(400).json({message: "Earthquake does not exist"});
                     return false;
                 }
+
+                earthq_name_id = check.recordset[0].earthquake_name_id
+                //console.log(earthq_name_id)
                 
                 let max_id_sql = await sql.query("SELECT MAX(sample_id) as 'max' from SampleData");
 
@@ -146,7 +149,8 @@ router.post("/create", async (req, res) => {
                     '${req.body.observations}',
                     '${shop_description}',
                     '${image_url}',
-                    '${empty_item_name}'
+                    '${empty_item_name}',
+                    '${earthq_name_id}'
                 )`).then(async _ => {
                     res.status(200).json({message: `please store it on shelf ${location}`});
                     return true;
