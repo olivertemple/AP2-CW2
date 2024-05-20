@@ -33,8 +33,5 @@ AP2-Cw2
 |
 └─── frontend_build
         └─── www - build of the frontend website to improve performance
-
-
-
 ```
 
