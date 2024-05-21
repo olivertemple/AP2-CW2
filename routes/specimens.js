@@ -207,8 +207,6 @@ const searchSchema = {
     earthquake_id: ["number", false],
     collection_date: ['string', false],
     sample_type: ["string", false],
-    longitude: ['number', false],
-    latitude: ['number', false],
     country: ["string", false],
     current_location: ["string", false],
     is_sample_required: ["number", false],
@@ -243,16 +241,6 @@ router.post("/search", (req, res) => {
     if (errors.length > 0) {
         res.status(400).json({message: "Invalid request body", errors: errors});
         return false;
-    }
-
-    if (!(req.body.latitude >= -90 && req.body.latitude <= 90)) {
-        res.status(400).json({message: "invalid latitude"})
-        return false
-    }
-
-    if (!(req.body.longitude >= -180 && req.body.longitude <= 180)) {
-        res.status(400).json({message: "invalid longitude"})
-        return false
     }
 
     let sql_query = [];
